@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg")  # ✅ REQUIRED for Render / servers
 from flask import Flask, render_template, request, send_file, redirect, url_for, flash
 from collections import defaultdict
 from datetime import datetime  
@@ -405,4 +407,4 @@ def download_expenses():
         return "🚨 No expenses recorded yet!"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
