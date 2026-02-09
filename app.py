@@ -166,27 +166,15 @@ def manage_categories():
 # ✅ Helper function to get categories
 def get_categories():
     categories = []
-    
-    try:
-        with open(CATEGORIES_FILE, "r", encoding='utf-8') as f:
-            for line in f:
-                if line.strip():
-                    parts = line.strip().split(",")
-                    if len(parts) == 2:
-                        categories.append({"name": parts[0], "icon": parts[1]})
-    except FileNotFoundError:
-        # Default categories if file doesn't exist
-        categories = [
-            {"name": "Food", "icon": "🍔"},
-            {"name": "Entertainment", "icon": "🎭"},
-            {"name": "Shopping", "icon": "🛍️"},
-            {"name": "Bills", "icon": "📑"},
-            {"name": "Other", "icon": "💼"}
-        ]
-    
+    with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                name, icon = [x.strip() for x in line.split(",", 1)]
+                categories.append({
+                    "name": name,
+                    "icon": icon
+                })
     return categories
-
-
 
 @app.route('/insights')
 def generate_insights():
