@@ -20,16 +20,18 @@ if not os.path.exists(EXPENSE_FILE):
 
 # ✅ ADD THIS: Ensure categories file exists at startup
 CATEGORIES_FILE = "categories.txt"
-if not os.path.exists(CATEGORIES_FILE):
-    default_categories = [
-        "Food,🍔",
-        "Entertainment,🎭",
-        "Shopping,🛍️",
-        "Bills,📑",
-        "Other,💼"
-    ]
-    with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
-        f.write("\n".join(default_categories))
+
+#if not os.path.exists(CATEGORIES_FILE):
+#default_categories = [
+#"Food,🍔",
+#"Entertainment,🎭",
+#"Shopping,🛍️",
+#"Bills,📑",
+#"Other,💼"
+# ]
+#with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
+#f.write("\n".join(default_categories))
+
 
 
 @app.route('/')
