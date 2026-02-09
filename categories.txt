@@ -1,6 +1,6 @@
-Food ,🍔
-Entertainment ,🎭
-Shopping ,🛍️
-Bills ,📑
+Food,🍔
+Entertainment,🎭
+Shopping,🛍️
+Bills,📑
 Other,💼
-travel ,✈️ 
+travel,✈️
