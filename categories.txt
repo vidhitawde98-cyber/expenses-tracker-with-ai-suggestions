@@ -1,2 +1,6 @@
-
+Food ,🍔
+Entertainment ,🎭
+Shopping ,🛍️
+Bills ,📑
+Other,💼
 travel ,✈️ 
