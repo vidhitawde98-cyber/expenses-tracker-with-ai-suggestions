@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Insights{% endblock %}
+
+{% block content %}
+<h2 class="text-center">📊 Spending Insights</h2>
+
+{% if total_expenses == 0 %}
+<p class="text-center">No expenses recorded yet.</p>
+{% else %}
+
+<!-- ✅ Total Expenses Card -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-info shadow">
+            <div class="card-body">
+                <h5 class="card-title">💰 Total Expenses</h5>
+                <h3>₹{{ total_expenses }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning shadow">
+            <div class="card-body">
+                <h5 class="card-title">💸 Highest Category</h5>
+                <h3>{{ highest_category }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success shadow">
+            <div class="card-body">
+                <h5 class="card-title">💡 Recommended Savings</h5>
+                <h3>₹{{ savings_recommendation|round|int }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ AI INSIGHTS SECTION -->
+{% if ai_warnings %}
+<h3 class="mt-5">🤖 AI-Powered Spending Analysis</h3>
+<div class="card shadow-lg">
+    <div class="card-body">
+        {% for warning in ai_warnings %}
+            {% if warning.type == 'warning' %}
+                <div class="alert alert-warning" role="alert">
+                    {{ warning.message }}
+                </div>
+            {% else %}
+                <div class="alert alert-success" role="alert">
+                    {{ warning.message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+        
+        <div class="alert alert-info mt-3" role="alert">
+            💡 <strong>Pro Tip:</strong> Try to save at least 20% of your income every month! Based on your spending, you should aim to save <strong>₹{{ savings_recommendation|round|int }}</strong> monthly.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ✅ Category Breakdown -->
+<h3 class="mt-5">📌 Category-wise Spending</h3>
+<div class="card shadow">
+    <div class="card-body">
+        <ul class="list-group">
+            {% for category, amount in category_totals.items() %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <strong>{{ category }}</strong>
+                <span class="badge bg-primary rounded-pill">₹{{ amount }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<!-- ✅ Charts -->
+{% if category_chart %}
+<h3 class="mt-5">📈 Category-Wise Spending Distribution</h3>
+<div class="card shadow">
+    <div class="card-body text-center">
+        <img src="{{ category_chart }}" class="img-fluid" alt="Category Pie Chart" style="max-width: 600px;">
+    </div>
+</div>
+{% endif %}
+
+{% if trend_chart %}
+<h3 class="mt-5">📉 Monthly Spending Trends</h3>
+<div class="card shadow">
+    <div class="card-body text-center">
+        <img src="{{ trend_chart }}" class="img-fluid" alt="Monthly Line Chart">
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+
+<div class="text-center mt-4 mb-5">
+    <a href="/" class="btn btn-primary">➕ Add New Expense</a>
+    <a href="/view" class="btn btn-info">📜 View All Expenses</a>
+</div>
+
+{% endblock %}

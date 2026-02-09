@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Categories{% endblock %}
+
+{% block content %}
+<h2 class="text-center">🏷️ Manage Expense Categories</h2>
+
+<!-- Add New Category -->
+<div class="card shadow-lg mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">➕ Add New Category</h5>
+    </div>
+    <div class="card-body">
+        <form action="/categories" method="POST">
+            <input type="hidden" name="action" value="add">
+            <div class="row">
+                <div class="col-md-5">
+                    <label for="category_name" class="form-label">Category Name:</label>
+                    <input type="text" name="category_name" class="form-control" placeholder="e.g., Travel" required>
+                </div>
+                <div class="col-md-5">
+                    <label for="category_icon" class="form-label">Icon (Emoji):</label>
+                    <input type="text" name="category_icon" class="form-control" placeholder="e.g., ✈️" maxlength="5" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">Add</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Existing Categories -->
+<div class="card shadow-lg">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">📋 Current Categories</h5>
+    </div>
+    <div class="card-body">
+        {% if categories %}
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">{{ category.icon }} {{ category.name }}</h5>
+                        </div>
+                        <form action="/categories" method="POST" style="display: inline;">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="category_delete" value="{{ category.name }}">
+                            <button type="submit" class="btn btn-danger btn-sm" 
+                                    onclick="return confirm('Are you sure you want to delete this category?')">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-center text-muted">No categories available.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <a href="/" class="btn btn-primary">← Back to Home</a>
+</div>
+
+{% endblock %}
