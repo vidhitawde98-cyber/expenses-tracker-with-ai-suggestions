@@ -219,6 +219,31 @@ def get_categories():
     
     return categories
 
+@app.route('/reset-categories')
+def reset_categories():
+    """Temporary route to reset categories - remove after fixing"""
+    try:
+        if os.path.exists(CATEGORIES_FILE):
+            os.remove(CATEGORIES_FILE)
+        
+        default_categories_list = [
+            "Food,🍔",
+            "Entertainment,🎭",
+            "Shopping,🛍️",
+            "Bills,📑",
+            "Other,💼"
+        ]
+        
+        with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
+            f.write("\n".join(default_categories_list))
+        
+        flash('✅ Categories reset successfully!', 'success')
+    except Exception as e:
+        flash(f'❌ Error: {str(e)}', 'danger')
+    
+    return redirect(url_for('home'))
+
+
 @app.route('/insights')
 def generate_insights():
     category_totals = defaultdict(int)
