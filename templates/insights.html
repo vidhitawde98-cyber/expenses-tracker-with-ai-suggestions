@@ -37,25 +37,27 @@
     </div>
 </div>
 
-<!-- ✅ AI INSIGHTS SECTION -->
+<!-- ✅ AI INSIGHTS SECTION - FIXED -->
 {% if ai_warnings %}
-<h3 class="mt-5">🤖 AI-Powered Spending Analysis</h3>
-<div class="card shadow-lg">
-    <div class="card-body">
-        {% for warning in ai_warnings %}
-            {% if warning.type == 'warning' %}
-                <div class="alert alert-warning" role="alert">
-                    {{ warning.message }}
-                </div>
-            {% else %}
-                <div class="alert alert-success" role="alert">
-                    {{ warning.message }}
-                </div>
-            {% endif %}
-        {% endfor %}
-        
-        <div class="alert alert-info mt-3" role="alert">
-            💡 <strong>Pro Tip:</strong> Try to save at least 20% of your income every month! Based on your spending, you should aim to save <strong>₹{{ savings_recommendation|round|int }}</strong> monthly.
+<div class="mt-5">
+    <h3>🤖 AI-Powered Spending Analysis</h3>
+    <div class="card shadow-lg">
+        <div class="card-body">
+            {% for warning in ai_warnings %}
+                {% if warning.type == 'warning' %}
+                    <div class="alert alert-warning mb-3" role="alert">
+                        {{ warning.message }}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success mb-3" role="alert">
+                        {{ warning.message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            
+            <div class="alert alert-info mt-3" role="alert">
+                💡 <strong>Pro Tip:</strong> Try to save at least 20% of your income every month! Based on your spending, you should aim to save <strong>₹{{ savings_recommendation|round|int }}</strong> monthly.
+            </div>
         </div>
     </div>
 </div>

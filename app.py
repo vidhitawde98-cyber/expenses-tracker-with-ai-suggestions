@@ -14,11 +14,6 @@ app.secret_key = 'vidhi'
 EXPENSE_FILE = "expenses.txt"
 CATEGORIES_FILE = "categories.txt"
 
-# ✅ Ensure expense file exists
-if not os.path.exists(EXPENSE_FILE):
-    with open(EXPENSE_FILE, "w") as f:
-        f.write("Category,Amount,Date\n")
-
 # ✅ Ensure categories file has ALL default categories
 default_categories = {
     "Food": "🍔",
@@ -28,29 +23,44 @@ default_categories = {
     "Other": "💼"
 }
 
+print("=" * 50)
+print("INITIALIZING CATEGORIES...")
+print("=" * 50)
+
 # Read existing custom categories
 existing_categories = {}
 if os.path.exists(CATEGORIES_FILE):
+    print(f"Categories file exists. Reading...")
     try:
         with open(CATEGORIES_FILE, "r", encoding='utf-8') as f:
             for line in f:
                 if line.strip():
-                    parts = line.strip().split(",")
+                    parts = line.strip().split(",", 1)  # Split only on first comma
                     if len(parts) == 2:
-                        # Only add if not a default category (to preserve user's custom ones)
+                        # Only preserve custom categories (not defaults)
                         if parts[0] not in default_categories:
                             existing_categories[parts[0]] = parts[1]
+                            print(f"Found custom category: {parts[0]} - {parts[1]}")
     except Exception as e:
         print(f"Error reading categories: {e}")
+else:
+    print("Categories file does not exist. Will create new one.")
 
 # Merge: defaults first, then custom categories
 all_categories = {**default_categories, **existing_categories}
+print(f"Total categories to write: {len(all_categories)}")
 
 # Write all categories
-with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
-    for name, icon in all_categories.items():
-        f.write(f"{name},{icon}\n")
+try:
+    with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
+        for name, icon in all_categories.items():
+            f.write(f"{name},{icon}\n")
+            print(f"Wrote: {name},{icon}")
+    print("Categories file written successfully!")
+except Exception as e:
+    print(f"Error writing categories: {e}")
 
+print("=" * 50)
 
 @app.route('/')
 def home():
