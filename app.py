@@ -12,25 +12,27 @@ app = Flask(__name__, template_folder='templates')  # ✅ Define Flask only ONCE
 app.secret_key = 'vidhi'  # ✅ Required for flash messages
 
 EXPENSE_FILE = "expenses.txt"
+CATEGORIES_FILE = "categories.txt"
+
 
 # ✅ Ensure the file exists to avoid errors
 if not os.path.exists(EXPENSE_FILE):
     with open(EXPENSE_FILE, "w") as f:
         f.write("Category,Amount,Date\n")  # Create file with header
 
-# ✅ ADD THIS: Ensure categories file exists at startup
+# ✅ Ensure categories file exists at startup
 CATEGORIES_FILE = "categories.txt"
 
-#if not os.path.exists(CATEGORIES_FILE):
-#default_categories = [
-#"Food,🍔",
-#"Entertainment,🎭",
-#"Shopping,🛍️",
-#"Bills,📑",
-#"Other,💼"
-# ]
-#with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
-#f.write("\n".join(default_categories))
+if not os.path.exists(CATEGORIES_FILE):
+    default_categories = [
+        "Food,🍔",
+        "Entertainment,🎭",
+        "Shopping,🛍️",
+        "Bills,📑",
+        "Other,💼"
+    ]
+    with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
+        f.write("\n".join(default_categories))
 
 
 
@@ -168,14 +170,27 @@ def manage_categories():
 # ✅ Helper function to get categories
 def get_categories():
     categories = []
-    with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            if line.strip():
-                name, icon = [x.strip() for x in line.split(",", 1)]
-                categories.append({
-                    "name": name,
-                    "icon": icon
-                })
+    
+    try:
+        with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    parts = line.strip().split(",")
+                    if len(parts) == 2:
+                        categories.append({
+                            "name": parts[0],
+                            "icon": parts[1]
+                        })
+    except FileNotFoundError:
+        # Return default categories if file doesn't exist
+        categories = [
+            {"name": "Food", "icon": "🍔"},
+            {"name": "Entertainment", "icon": "🎭"},
+            {"name": "Shopping", "icon": "🛍️"},
+            {"name": "Bills", "icon": "📑"},
+            {"name": "Other", "icon": "💼"}
+        ]
+    
     return categories
 
 @app.route('/insights')
