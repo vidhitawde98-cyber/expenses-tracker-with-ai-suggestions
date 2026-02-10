@@ -8,32 +8,48 @@ import os
 import base64
 from io import BytesIO
 
-app = Flask(__name__, template_folder='templates')  # ✅ Define Flask only ONCE
-app.secret_key = 'vidhi'  # ✅ Required for flash messages
+app = Flask(__name__, template_folder='templates')
+app.secret_key = 'vidhi'
 
 EXPENSE_FILE = "expenses.txt"
 CATEGORIES_FILE = "categories.txt"
 
-
-# ✅ Ensure the file exists to avoid errors
+# ✅ Ensure expense file exists
 if not os.path.exists(EXPENSE_FILE):
     with open(EXPENSE_FILE, "w") as f:
-        f.write("Category,Amount,Date\n")  # Create file with header
+        f.write("Category,Amount,Date\n")
 
-# ✅ Ensure categories file exists at startup
-CATEGORIES_FILE = "categories.txt"
+# ✅ Ensure categories file has ALL default categories
+default_categories = {
+    "Food": "🍔",
+    "Entertainment": "🎭",
+    "Shopping": "🛍️",
+    "Bills": "📑",
+    "Other": "💼"
+}
 
-if not os.path.exists(CATEGORIES_FILE):
-    default_categories = [
-        "Food,🍔",
-        "Entertainment,🎭",
-        "Shopping,🛍️",
-        "Bills,📑",
-        "Other,💼"
-    ]
-    with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
-        f.write("\n".join(default_categories))
+# Read existing custom categories
+existing_categories = {}
+if os.path.exists(CATEGORIES_FILE):
+    try:
+        with open(CATEGORIES_FILE, "r", encoding='utf-8') as f:
+            for line in f:
+                if line.strip():
+                    parts = line.strip().split(",")
+                    if len(parts) == 2:
+                        # Only add if not a default category (to preserve user's custom ones)
+                        if parts[0] not in default_categories:
+                            existing_categories[parts[0]] = parts[1]
+    except Exception as e:
+        print(f"Error reading categories: {e}")
 
+# Merge: defaults first, then custom categories
+all_categories = {**default_categories, **existing_categories}
+
+# Write all categories
+with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
+    for name, icon in all_categories.items():
+        f.write(f"{name},{icon}\n")
 
 
 @app.route('/')

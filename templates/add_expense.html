@@ -6,14 +6,14 @@
 <h2 class="text-center">➕ Add Expense</h2>
 <form action="/add" method="POST" class="card p-4 shadow-lg">
     <label for="category" class="form-label">Category:</label>
-    <select name="category" class="form-select" required>
+    <select name="category" id="category" class="form-select" required>
         {% for category in categories %}
         <option value="{{ category.name }}">{{ category.icon }} {{ category.name }}</option>
         {% endfor %}
     </select>
     <br>
     <label for="amount" class="form-label">Amount (₹):</label>
-    <input type="number" name="amount" class="form-control" required>
+    <input type="number" name="amount" id="amount" class="form-control" required>
     <br>
     <button type="submit" class="btn btn-primary w-100">💾 Save Expense</button>
 </form>
