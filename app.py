@@ -9,67 +9,75 @@ import base64
 from io import BytesIO
 
 app = Flask(__name__, template_folder='templates')
-app.secret_key = 'vidhi'
+app.secret_key = 'vidhi-expense-tracker-2024'
 
 EXPENSE_FILE = "expenses.txt"
 CATEGORIES_FILE = "categories.txt"
 
-# ✅ Ensure categories file has ALL default categories
-default_categories = {
-    "Food": "🍔",
-    "Entertainment": "🎭",
-    "Shopping": "🛍️",
-    "Bills": "📑",
-    "Other": "💼"
-}
+# ✅ Ensure expense file exists
+if not os.path.exists(EXPENSE_FILE):
+    with open(EXPENSE_FILE, "w") as f:
+        f.write("Category,Amount,Date\n")
 
-print("=" * 50)
-print("INITIALIZING CATEGORIES...")
-print("=" * 50)
-
-# Read existing custom categories
-existing_categories = {}
-if os.path.exists(CATEGORIES_FILE):
-    print(f"Categories file exists. Reading...")
+# ✅ FORCE CREATE categories file with defaults on EVERY startup
+def initialize_categories():
+    """ALWAYS ensure default categories exist"""
+    default_categories = [
+        "Food,🍔",
+        "Entertainment,🎭",
+        "Shopping,🛍️",
+        "Bills,📑",
+        "Other,💼"
+    ]
+    
+    print("=" * 60)
+    print("🔧 INITIALIZING CATEGORIES...")
+    print("=" * 60)
+    
+    # Read existing custom categories (not defaults)
+    custom_categories = []
+    if os.path.exists(CATEGORIES_FILE):
+        try:
+            with open(CATEGORIES_FILE, "r", encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and ',' in line:
+                        cat_name = line.split(',')[0]
+                        # Only keep custom categories
+                        if cat_name not in ['Food', 'Entertainment', 'Shopping', 'Bills', 'Other']:
+                            custom_categories.append(line)
+                            print(f"✅ Found custom category: {line}")
+        except Exception as e:
+            print(f"⚠️ Error reading categories: {e}")
+    
+    # Write: defaults first, then custom
+    all_categories = default_categories + custom_categories
+    
     try:
-        with open(CATEGORIES_FILE, "r", encoding='utf-8') as f:
-            for line in f:
-                if line.strip():
-                    parts = line.strip().split(",", 1)  # Split only on first comma
-                    if len(parts) == 2:
-                        # Only preserve custom categories (not defaults)
-                        if parts[0] not in default_categories:
-                            existing_categories[parts[0]] = parts[1]
-                            print(f"Found custom category: {parts[0]} - {parts[1]}")
+        with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
+            f.write("\n".join(all_categories))
+        print(f"✅ Written {len(all_categories)} categories")
+        for cat in all_categories:
+            print(f"   - {cat}")
     except Exception as e:
-        print(f"Error reading categories: {e}")
-else:
-    print("Categories file does not exist. Will create new one.")
+        print(f"❌ Error writing categories: {e}")
+    
+    print("=" * 60)
 
-# Merge: defaults first, then custom categories
-all_categories = {**default_categories, **existing_categories}
-print(f"Total categories to write: {len(all_categories)}")
+# Initialize on startup
+initialize_categories()
 
-# Write all categories
-try:
-    with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
-        for name, icon in all_categories.items():
-            f.write(f"{name},{icon}\n")
-            print(f"Wrote: {name},{icon}")
-    print("Categories file written successfully!")
-except Exception as e:
-    print(f"Error writing categories: {e}")
-
-print("=" * 50)
 
 @app.route('/')
 def home():
-    categories = get_categories()  # ✅ Get categories
-    return render_template("add_expense.html", categories=categories)  # ✅ Pass to template
+    categories = get_categories()
+    return render_template("add_expense.html", categories=categories)
+
 
 @app.route('/favicon.ico')
 def favicon():
-    return "", 204  # Returns an empty response with status 204 (No Content)
+    return "", 204
+
 
 @app.route('/add', methods=['POST'])
 def add_expense():
@@ -82,9 +90,8 @@ def add_expense():
 
     print("DEBUG: Added Expense:", entry)
 
-    # ✅ Redirect to the home page with a success message instead of plain HTML
-    flash("✅ Expense Added Successfully!")
-    return redirect(url_for('home'))  # ← THIS WAS MISSING!
+    flash(f"✅ Expense of ₹{amount} added to {category} successfully!", 'success')
+    return redirect(url_for('home'))
 
 
 @app.route('/view')
@@ -99,7 +106,7 @@ def view_expenses():
             for line in f:
                 data = line.strip().split(",")
                 if len(data) != 3 or 'date' in data[2].lower():
-                 continue  # Skip malformed lines or headers
+                    continue
 
                 category, amount, date_str = data
 
@@ -109,8 +116,7 @@ def view_expenses():
                     try:
                         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
                     except ValueError:
-                        continue  # Skip  if invalid date format
-
+                        continue
 
                 if category_filter and category_filter not in category.lower():
                     continue  
@@ -132,14 +138,13 @@ def view_expenses():
 
     return render_template("view_expenses.html", expenses=expenses)
 
-# ✅ Route to delete a specific expense
+
 @app.route('/delete/<int:index>')
 def delete_expense(index):
     try:
         with open(EXPENSE_FILE, "r") as f:
             lines = f.readlines()
         
-        # Keep header and remove the specific expense
         if index > 0 and index < len(lines):
             deleted_line = lines.pop(index)
             
@@ -155,11 +160,9 @@ def delete_expense(index):
     
     return redirect(url_for('view_expenses'))
 
-# ✅ Route to manage custom categories
+
 @app.route('/categories', methods=['GET', 'POST'])
 def manage_categories():
-    # ✅ Use the global CATEGORIES_FILE constant instead of redefining
-    
     if request.method == 'POST':
         action = request.form.get('action')
         
@@ -182,26 +185,27 @@ def manage_categories():
             
             with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
                 for line in lines:
-                    if not line.startswith(category_to_delete + ","):
+                    if not line.strip().startswith(category_to_delete + ","):
                         f.write(line)
             
             flash(f'🗑️ Category "{category_to_delete}" deleted!', 'success')
         
         return redirect(url_for('manage_categories'))
     
-    # Read categories
     categories = get_categories()
     return render_template("categories.html", categories=categories)
 
-# ✅ Helper function to get categories
+
 def get_categories():
+    """Get all categories from file"""
     categories = []
     
     try:
         with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
             for line in f:
-                if line.strip():
-                    parts = line.strip().split(",")
+                line = line.strip()
+                if line and ',' in line:
+                    parts = line.split(",", 1)
                     if len(parts) == 2:
                         categories.append({
                             "name": parts[0],
@@ -219,13 +223,11 @@ def get_categories():
     
     return categories
 
+
 @app.route('/reset-categories')
 def reset_categories():
-    """Temporary route to reset categories - remove after fixing"""
+    """Reset categories to defaults"""
     try:
-        if os.path.exists(CATEGORIES_FILE):
-            os.remove(CATEGORIES_FILE)
-        
         default_categories_list = [
             "Food,🍔",
             "Entertainment,🎭",
@@ -237,21 +239,21 @@ def reset_categories():
         with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
             f.write("\n".join(default_categories_list))
         
-        flash('✅ Categories reset successfully!', 'success')
+        flash('✅ Categories reset to defaults successfully!', 'success')
     except Exception as e:
         flash(f'❌ Error: {str(e)}', 'danger')
     
-    return redirect(url_for('home'))
+    return redirect(url_for('manage_categories'))
 
 
 @app.route('/insights')
 def generate_insights():
     category_totals = defaultdict(int)
-    monthly_totals=defaultdict(int)
+    monthly_totals = defaultdict(int)
     total_expenses = 0
     max_expense = 0
     highest_category = "None"
-    ai_warnings = [] # ✅ NEW: Store AI warnings
+    ai_warnings = []
 
     # Define spending thresholds
     thresholds = {
@@ -282,7 +284,7 @@ def generate_insights():
                     continue  
                 
                 try:
-                     date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
                 except ValueError:
                     try:
                         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
@@ -319,19 +321,13 @@ def generate_insights():
                         "message": f"✅ Good job! Your {category} spending is within limits ({percentage:.1%})."
                     })
     
-    # Calculate savings recommendation
-    savings_recommendation = total_expenses * 0.2  # 20% of expenses
+    savings_recommendation = total_expenses * 0.2
     
-    # ✅ Ensure max_expense and highest_category have default values
     if not category_totals:
-         category_totals = {"No Data": 1}
+        category_totals = {"No Data": 1}
     
-    # ✅ Generate Chart Images
     category_chart = generate_pie_chart(category_totals) if len(category_totals) > 1 else None
     trend_chart = generate_line_chart(monthly_totals) if monthly_totals else None
-    
-    #print("Category Chart:", category_chart)
-    #print("Trend Chart:", trend_chart)
     
     return render_template("insights.html", 
                            total_expenses=total_expenses, 
@@ -340,60 +336,46 @@ def generate_insights():
                            category_totals=category_totals, 
                            category_chart=category_chart, 
                            trend_chart=trend_chart,
-                           ai_warnings=ai_warnings,  # ✅ Pass AI insights
+                           ai_warnings=ai_warnings,
                            savings_recommendation=savings_recommendation)
 
-# 🔥 Function to Generate Pie Chart (Category-wise Spending)
-# 🔥 Function to Generate Pie Chart (Category-wise Spending)
+
 def generate_pie_chart(data):
     if not data:
         return None
     
-    # ✅ Increase figure size and add padding
     fig, ax = plt.subplots(figsize=(8, 8))
-    
-    # ✅ Set white background
     fig.patch.set_facecolor('white')
     ax.set_facecolor('white')
     
     amounts = [int(v) for v in data.values()]
     labels = list(data.keys())
     
-    # ✅ Improve chart appearance with better colors
     colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F']
-    explode = [0.05] * len(labels)  # Slightly separate slices
+    explode = [0.05] * len(labels)
     
     ax.pie(amounts, labels=labels, autopct='%1.1f%%', startangle=140, 
            colors=colors, explode=explode, shadow=True,
            textprops={'fontsize': 11, 'weight': 'bold', 'color': 'black'})
     
     ax.axis('equal')
-    
-    # ✅ Add title with black color
     plt.title('Category-wise Spending Distribution', fontsize=14, weight='bold', pad=20, color='black')
-    
-    # ✅ Tight layout to prevent cut-off
     plt.tight_layout()
     
     return save_chart(fig)
 
 
-# 🔥 Function to Generate Line Chart (Monthly Spending Trends)
 def generate_line_chart(data):
     if not data:
         return None
     
-    # ✅ Increase figure size
     fig, ax = plt.subplots(figsize=(10, 6))
-    
-    # ✅ Set white background for the figure
     fig.patch.set_facecolor('white')
     ax.set_facecolor('white')
     
     months = list(data.keys())
     amounts = list(data.values())
     
-    # ✅ Improve line chart appearance
     ax.plot(months, amounts, marker='o', linestyle='-', color='#4ECDC4', 
             linewidth=2.5, markersize=8, markerfacecolor='#FF6B6B', 
             markeredgecolor='#fff', markeredgewidth=2)
@@ -402,41 +384,32 @@ def generate_line_chart(data):
     ax.set_xlabel("Month", fontsize=12, weight='bold', color='black')
     ax.set_ylabel("Total Spent (₹)", fontsize=12, weight='bold', color='black')
     
-    # ✅ Set tick colors to black so they're visible
     ax.tick_params(axis='x', colors='black', labelsize=10)
     ax.tick_params(axis='y', colors='black', labelsize=10)
     
-    # ✅ Rotate x-axis labels for better readability
     plt.xticks(rotation=45, ha='right')
-    
-    # ✅ Add grid with better visibility
     ax.grid(True, alpha=0.3, linestyle='--', color='gray')
     
-    # ✅ Add value labels on points
     for i, (month, amount) in enumerate(zip(months, amounts)):
         ax.annotate(f'₹{amount}', (month, amount), 
                    textcoords="offset points", xytext=(0,10), 
                    ha='center', fontsize=9, weight='bold', color='black')
     
-    # ✅ Set spine colors
     for spine in ax.spines.values():
         spine.set_edgecolor('black')
     
-    # ✅ Tight layout to prevent cut-off
     plt.tight_layout()
-    
     return save_chart(fig)
 
-# ✅ Save Chart as Base64 Image (to Embed in HTML)
+
 def save_chart(fig):
     buffer = BytesIO()
-    fig.savefig(buffer, format="png")
+    fig.savefig(buffer, format="png", dpi=100, bbox_inches='tight')
     buffer.seek(0)
     encoded = base64.b64encode(buffer.read()).decode()
     plt.close(fig)
     return f"data:image/png;base64,{encoded}"
 
-    
 
 @app.route('/debug')
 def debug_file():
@@ -447,6 +420,7 @@ def debug_file():
     except FileNotFoundError:
         return "🚨 No expenses recorded yet!"
 
+
 @app.route('/clear')
 def clear_expenses():
     with open(EXPENSE_FILE, "w") as f:
@@ -455,12 +429,15 @@ def clear_expenses():
     flash('🗑️ All expenses have been deleted!', 'info')
     return redirect(url_for('view_expenses'))
 
+
 @app.route('/download')
 def download_expenses():
     try:
         return send_file(EXPENSE_FILE, as_attachment=True, download_name="expenses.csv", mimetype="text/csv")
     except FileNotFoundError:
-        return "🚨 No expenses recorded yet!"
+        flash('🚨 No expenses recorded yet!', 'danger')
+        return redirect(url_for('view_expenses'))
+
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
