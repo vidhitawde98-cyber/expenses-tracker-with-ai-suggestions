@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Expense Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 480px;
+            background: white;
+            border-radius: 20px;
+            padding: 45px 40px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        }
+        .auth-logo { text-align: center; font-size: 3rem; margin-bottom: 10px; }
+        .auth-title { text-align: center; font-size: 1.8rem; font-weight: 700; color: #333; margin-bottom: 5px; }
+        .auth-subtitle { text-align: center; color: #888; font-size: 0.95rem; margin-bottom: 30px; }
+        .form-control { height: 48px; border-radius: 10px; border: 2px solid #e8e8e8; }
+        .form-control:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+        .strength-bar-container { height: 6px; background: #e8e8e8; border-radius: 3px; margin-top: 8px; }
+        .strength-bar { height: 100%; width: 0%; border-radius: 3px; transition: all 0.3s; }
+        .btn-register {
+            width: 100%; height: 50px; border-radius: 10px;
+            font-size: 1.1rem; font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none; color: white; margin-top: 10px;
+        }
+        .btn-register:hover { transform: translateY(-2px); color: white; }
+        .divider { display: flex; align-items: center; margin: 25px 0; color: #aaa; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e8e8e8; }
+        .divider span { padding: 0 15px; }
+        .btn-login {
+            width: 100%; height: 50px; border-radius: 10px;
+            font-size: 1rem; font-weight: 600;
+            border: 2px solid #667eea; color: #667eea; background: transparent;
+        }
+        .btn-login:hover { background: #667eea; color: white; }
+        .footer-text { text-align: center; margin-top: 25px; color: #aaa; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="auth-logo">✨</div>
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Join us to start tracking expenses</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show mb-3">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+            <div class="mb-3">
+                <label class="form-label fw-bold">👤 Username</label>
+                <input type="text" class="form-control" name="username"
+                       placeholder="Choose a username (min 3 chars)" required minlength="3">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">📧 Email Address</label>
+                <input type="email" class="form-control" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">🔒 Password</label>
+                <input type="password" class="form-control" name="password"
+                       id="password" placeholder="Min 6 characters" required minlength="6">
+                <div class="strength-bar-container">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+                <small id="strengthText" class="fw-bold mt-1 d-block"></small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">🔒 Confirm Password</label>
+                <input type="password" class="form-control" name="confirm_password"
+                       id="confirm_password" placeholder="Re-enter password" required>
+                <small id="matchText" class="fw-bold mt-1 d-block"></small>
+            </div>
+            <button type="submit" class="btn btn-register">🚀 Create Account</button>
+        </form>
+
+        <div class="divider"><span>Already have an account?</span></div>
+        <a href="{{ url_for('login') }}" class="btn btn-login">🔐 Login Instead</a>
+        <p class="footer-text">© 2026 Expense Tracker | Built with Flask & MongoDB</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+        const confirmInput = document.getElementById('confirm_password');
+        const matchText = document.getElementById('matchText');
+
+        passwordInput.addEventListener('input', function() {
+            const val = this.value;
+            let strength = 0;
+            if (val.length >= 6) strength++;
+            if (val.length >= 10) strength++;
+            if (/[a-z]/.test(val) && /[A-Z]/.test(val)) strength++;
+            if (/\d/.test(val)) strength++;
+            if (/[^a-zA-Z\d]/.test(val)) strength++;
+            const percent = (strength / 5) * 100;
+            strengthBar.style.width = percent + '%';
+            if (strength <= 2) { strengthBar.style.background = '#dc3545'; strengthText.textContent = '🔴 Weak'; strengthText.style.color = '#dc3545'; }
+            else if (strength <= 3) { strengthBar.style.background = '#ffc107'; strengthText.textContent = '🟡 Medium'; strengthText.style.color = '#ffc107'; }
+            else { strengthBar.style.background = '#198754'; strengthText.textContent = '🟢 Strong!'; strengthText.style.color = '#198754'; }
+        });
+
+        confirmInput.addEventListener('input', function() {
+            if (this.value === passwordInput.value) {
+                matchText.textContent = '✅ Passwords match!';
+                matchText.style.color = '#198754';
+            } else {
+                matchText.textContent = '❌ Passwords do not match!';
+                matchText.style.color = '#dc3545';
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            if (passwordInput.value !== confirmInput.value) {
+                e.preventDefault();
+                alert('❌ Passwords do not match!');
+            }
+        });
+    </script>
+</body>
+</html>

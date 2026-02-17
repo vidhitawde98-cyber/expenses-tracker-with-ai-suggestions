@@ -1,61 +1,79 @@
 {% extends 'base.html' %}
-
 {% block title %}View Expenses{% endblock %}
-
 {% block content %}
-<h2 class="text-center">📜 Expense List</h2>
 
-<!-- 🔍 Search & Filter Form -->
-<form action="/view" method="GET" class="card p-3 shadow-sm">
-    <div class="row">
+<h2 class="text-center mb-4">📜 My Expenses</h2>
+
+<form action="{{ url_for('view_expenses') }}" method="GET" class="card p-3 shadow-sm mb-4">
+    <div class="row g-2">
         <div class="col-md-4">
-            <input type="text" name="category" class="form-control" placeholder="🔍 Search by Category">
+            <input type="text" name="category" class="form-control"
+                   placeholder="🔍 Search by Category"
+                   value="{{ request.args.get('category', '') }}">
         </div>
         <div class="col-md-3">
-            <input type="date" name="start_date" class="form-control">
+            <input type="date" name="start_date" class="form-control"
+                   value="{{ request.args.get('start_date', '') }}">
         </div>
         <div class="col-md-3">
-            <input type="date" name="end_date" class="form-control">
+            <input type="date" name="end_date" class="form-control"
+                   value="{{ request.args.get('end_date', '') }}">
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-success w-100">Search</button>
+            <button type="submit" class="btn btn-success w-100">🔍 Search</button>
         </div>
     </div>
 </form>
 
 {% if expenses %}
-<table class="table table-bordered mt-4 shadow">
-    <thead class="table-dark">
-        <tr>
-            <th>Category</th>
-            <th>Amount (₹)</th>
-            <th>Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for expense in expenses %}
-        <tr>
-            <td>{{ expense[0] }}</td>
-            <td>₹{{ expense[1] }}</td>
-            <td>{{ expense[2] }}</td>
-            <td>
-                <a href="/delete/{{ loop.index }}" class="btn btn-danger btn-sm" 
-                   onclick="return confirm('Are you sure you want to delete this expense?')">
-                    🗑️ Delete
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="card shadow mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount (₹)</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td><strong>{{ expense[1] }}</strong></td>
+                        <td class="text-success fw-bold">₹{{ expense[2] }}</td>
+                        <td>{{ expense[3] }}</td>
+                        <td>
+                            <a href="{{ url_for('delete_expense', expense_id=expense[0]) }}"
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('Delete this expense?')">
+                                🗑️ Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between flex-wrap gap-2 mb-5">
+    <a href="{{ url_for('home') }}" class="btn btn-primary">➕ Add New Expense</a>
+    <a href="{{ url_for('download_expenses') }}" class="btn btn-success">⬇️ Download CSV</a>
+    <a href="{{ url_for('clear_expenses') }}" class="btn btn-danger"
+       onclick="return confirm('Delete ALL expenses? Cannot be undone!')">
+        🗑️ Clear All
+    </a>
+</div>
+
 {% else %}
-<p class="text-center mt-4">No expenses added yet.</p>
+<div class="alert alert-info text-center py-5">
+    <h4>📭 No expenses found!</h4>
+    <p class="mt-2">Start tracking by adding your first expense.</p>
+    <a href="{{ url_for('home') }}" class="btn btn-primary mt-2">➕ Add Expense</a>
+</div>
 {% endif %}
 
-<div class="d-flex justify-content-between mt-4">
-    <a href="/" class="btn btn-primary">➕ Add New Expense</a>
-    <a href="/clear" class="btn btn-danger" onclick="return confirm('Delete ALL expenses?')">🗑️ Clear All Expenses</a>
-    <a href="/download" class="btn btn-warning">⬇️ Download CSV</a>
-</div>
 {% endblock %}

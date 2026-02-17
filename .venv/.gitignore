@@ -1,0 +1,5 @@
+# ignore runtime data
+expenses.txt
+
+# but allow categories
+!categories.txt

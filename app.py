@@ -1,76 +1,194 @@
 import matplotlib
-matplotlib.use("Agg")  # ✅ REQUIRED for Render / servers
-from flask import Flask, render_template, request, send_file, redirect, url_for, flash
+matplotlib.use("Agg")
+from flask import Flask, render_template, request, send_file, redirect, url_for, flash, session
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 from collections import defaultdict
-from datetime import datetime  
+from datetime import datetime
 import matplotlib.pyplot as plt
 import os
 import base64
 from io import BytesIO
 
 app = Flask(__name__, template_folder='templates')
-app.secret_key = 'vidhi-expense-tracker-2024'
+app.secret_key = os.environ.get('SECRET_KEY', 'vidhi-expense-tracker-secret-2024')
 
-EXPENSE_FILE = "expenses.txt"
-CATEGORIES_FILE = "categories.txt"
+# MongoDB Configuration
+MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
+client = MongoClient(MONGO_URI)
+db = client['expense_tracker']
 
-# ✅ Ensure expense file exists
-if not os.path.exists(EXPENSE_FILE):
-    with open(EXPENSE_FILE, "w") as f:
-        f.write("Category,Amount,Date\n")
+# Collections
+users_collection = db['users']
+expenses_collection = db['expenses']
+categories_collection = db['categories']
 
-# ✅ FORCE CREATE categories file with defaults on EVERY startup
-def initialize_categories():
-    """ALWAYS ensure default categories exist"""
+# Flask-Login Setup
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = '⚠️ Please log in to access this page.'
+login_manager.login_message_category = 'warning'
+
+
+# User Model
+class User(UserMixin):
+    def __init__(self, user_data):
+        self.id = str(user_data['_id'])
+        self.username = user_data['username']
+        self.email = user_data['email']
+        self.created_at = user_data.get('created_at')
+    
+    @staticmethod
+    def get_by_id(user_id):
+        user_data = users_collection.find_one({'_id': ObjectId(user_id)})
+        return User(user_data) if user_data else None
+    
+    @staticmethod
+    def get_by_email(email):
+        user_data = users_collection.find_one({'email': email})
+        return User(user_data) if user_data else None
+    
+    @staticmethod
+    def get_by_username(username):
+        user_data = users_collection.find_one({'username': username})
+        return User(user_data) if user_data else None
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get_by_id(user_id)
+
+
+# Initialize default categories for new users
+def initialize_user_categories(user_id):
     default_categories = [
-        "Food,🍔",
-        "Entertainment,🎭",
-        "Shopping,🛍️",
-        "Bills,📑",
-        "Other,💼"
+        {"name": "Food", "icon": "🍔", "user_id": user_id},
+        {"name": "Entertainment", "icon": "🎭", "user_id": user_id},
+        {"name": "Shopping", "icon": "🛍️", "user_id": user_id},
+        {"name": "Bills", "icon": "📑", "user_id": user_id},
+        {"name": "Other", "icon": "💼", "user_id": user_id}
     ]
-    
-    print("=" * 60)
-    print("🔧 INITIALIZING CATEGORIES...")
-    print("=" * 60)
-    
-    # Read existing custom categories (not defaults)
-    custom_categories = []
-    if os.path.exists(CATEGORIES_FILE):
-        try:
-            with open(CATEGORIES_FILE, "r", encoding='utf-8') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and ',' in line:
-                        cat_name = line.split(',')[0]
-                        # Only keep custom categories
-                        if cat_name not in ['Food', 'Entertainment', 'Shopping', 'Bills', 'Other']:
-                            custom_categories.append(line)
-                            print(f"✅ Found custom category: {line}")
-        except Exception as e:
-            print(f"⚠️ Error reading categories: {e}")
-    
-    # Write: defaults first, then custom
-    all_categories = default_categories + custom_categories
-    
-    try:
-        with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
-            f.write("\n".join(all_categories))
-        print(f"✅ Written {len(all_categories)} categories")
-        for cat in all_categories:
-            print(f"   - {cat}")
-    except Exception as e:
-        print(f"❌ Error writing categories: {e}")
-    
-    print("=" * 60)
-
-# Initialize on startup
-initialize_categories()
+    categories_collection.insert_many(default_categories)
+    print(f"✅ Initialized {len(default_categories)} categories for user {user_id}")
 
 
+# AUTHENTICATION ROUTES
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        # Validation
+        if not username or not email or not password:
+            flash('❌ All fields are required!', 'danger')
+            return render_template('register.html')
+        
+        if len(username) < 3:
+            flash('❌ Username must be at least 3 characters!', 'danger')
+            return render_template('register.html')
+        
+        if len(password) < 6:
+            flash('❌ Password must be at least 6 characters!', 'danger')
+            return render_template('register.html')
+        
+        if password != confirm_password:
+            flash('❌ Passwords do not match!', 'danger')
+            return render_template('register.html')
+        
+        # Check if user exists
+        if users_collection.find_one({'email': email}):
+            flash('❌ Email already registered! Please login.', 'danger')
+            return render_template('register.html')
+        
+        if users_collection.find_one({'username': username}):
+            flash('❌ Username already taken!', 'danger')
+            return render_template('register.html')
+        
+        # Create user
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        
+        user_data = {
+            'username': username,
+            'email': email,
+            'password': hashed_password,
+            'created_at': datetime.now()
+        }
+        
+        result = users_collection.insert_one(user_data)
+        user_id = str(result.inserted_id)
+        
+        # Initialize categories
+        initialize_user_categories(user_id)
+        
+        flash(f'✅ Account created successfully! Welcome {username}!', 'success')
+        
+        # Auto-login
+        user = User.get_by_email(email)
+        login_user(user)
+        
+        return redirect(url_for('home'))
+    
+    return render_template('register.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        remember = request.form.get('remember', False)
+        
+        if not email or not password:
+            flash('❌ Please enter both email and password!', 'danger')
+            return render_template('login.html')
+        
+        user_data = users_collection.find_one({'email': email})
+        
+        if not user_data:
+            flash('❌ Invalid email or password!', 'danger')
+            return render_template('login.html')
+        
+        if not check_password_hash(user_data['password'], password):
+            flash('❌ Invalid email or password!', 'danger')
+            return render_template('login.html')
+        
+        user = User(user_data)
+        login_user(user, remember=remember)
+        
+        flash(f'✅ Welcome back, {user.username}!', 'success')
+        
+        next_page = request.args.get('next')
+        return redirect(next_page) if next_page else redirect(url_for('home'))
+    
+    return render_template('login.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    username = current_user.username
+    logout_user()
+    flash(f'👋 Goodbye, {username}! You have been logged out.', 'info')
+    return redirect(url_for('login'))
+
+
+# MAIN APP ROUTES
 @app.route('/')
+@login_required
 def home():
-    categories = get_categories()
+    categories = get_user_categories()
     return render_template("add_expense.html", categories=categories)
 
 
@@ -80,88 +198,87 @@ def favicon():
 
 
 @app.route('/add', methods=['POST'])
+@login_required
 def add_expense():
     category = request.form['category']
     amount = request.form['amount']
-    entry = f"{category},{amount},{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-
-    with open(EXPENSE_FILE, "a") as f:
-        f.write(entry)
-
-    print("DEBUG: Added Expense:", entry)
-
+    
+    expense_data = {
+        'user_id': current_user.id,
+        'category': category,
+        'amount': float(amount),
+        'date': datetime.now()
+    }
+    
+    expenses_collection.insert_one(expense_data)
+    
     flash(f"✅ Expense of ₹{amount} added to {category} successfully!", 'success')
     return redirect(url_for('home'))
 
 
 @app.route('/view')
+@login_required
 def view_expenses():
-    expenses = []
     category_filter = request.args.get('category', '').lower()
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-
-    try:
-        with open(EXPENSE_FILE, "r") as f:
-            for line in f:
-                data = line.strip().split(",")
-                if len(data) != 3 or 'date' in data[2].lower():
-                    continue
-
-                category, amount, date_str = data
-
-                try:
-                    date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-                except ValueError:
-                    try:
-                        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-                    except ValueError:
-                        continue
-
-                if category_filter and category_filter not in category.lower():
-                    continue  
-
-                if start_date:
-                    start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-                    if date_obj < start_date_obj:
-                        continue  
-
-                if end_date:
-                    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
-                    if date_obj > end_date_obj:
-                        continue  
-
-                expenses.append((category, amount, date_str))
-
-    except FileNotFoundError:
-        expenses = []
-
-    return render_template("view_expenses.html", expenses=expenses)
-
-
-@app.route('/delete/<int:index>')
-def delete_expense(index):
-    try:
-        with open(EXPENSE_FILE, "r") as f:
-            lines = f.readlines()
-        
-        if index > 0 and index < len(lines):
-            deleted_line = lines.pop(index)
-            
-            with open(EXPENSE_FILE, "w") as f:
-                f.writelines(lines)
-            
-            flash(f'🗑️ Expense deleted successfully!', 'success')
+    
+    query = {'user_id': current_user.id}
+    
+    if category_filter:
+        query['category'] = {'$regex': category_filter, '$options': 'i'}
+    
+    if start_date:
+        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+        query['date'] = {'$gte': start_date_obj}
+    
+    if end_date:
+        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+        if 'date' in query:
+            query['date']['$lte'] = end_date_obj
         else:
-            flash('❌ Invalid expense index!', 'danger')
-            
-    except FileNotFoundError:
-        flash('🚨 No expenses found!', 'danger')
+            query['date'] = {'$lte': end_date_obj}
+    
+    expenses = list(expenses_collection.find(query).sort('date', -1))
+    
+    expenses_list = [
+        (exp['_id'], exp['category'], exp['amount'], exp['date'].strftime('%Y-%m-%d %H:%M:%S'))
+        for exp in expenses
+    ]
+    
+    return render_template("view_expenses.html", expenses=expenses_list)
+
+
+@app.route('/delete/<expense_id>')
+@login_required
+def delete_expense(expense_id):
+    try:
+        result = expenses_collection.delete_one({
+            '_id': ObjectId(expense_id),
+            'user_id': current_user.id
+        })
+        
+        if result.deleted_count > 0:
+            flash('🗑️ Expense deleted successfully!', 'success')
+        else:
+            flash('❌ Expense not found!', 'danger')
+    
+    except Exception as e:
+        flash(f'❌ Error: {str(e)}', 'danger')
     
     return redirect(url_for('view_expenses'))
 
 
+@app.route('/clear')
+@login_required
+def clear_expenses():
+    result = expenses_collection.delete_many({'user_id': current_user.id})
+    flash(f'🗑️ All {result.deleted_count} expenses deleted!', 'info')
+    return redirect(url_for('view_expenses'))
+
+
 @app.route('/categories', methods=['GET', 'POST'])
+@login_required
 def manage_categories():
     if request.method == 'POST':
         action = request.form.get('action')
@@ -171,91 +288,49 @@ def manage_categories():
             category_icon = request.form.get('category_icon')
             
             if category_name and category_icon:
-                with open(CATEGORIES_FILE, "a", encoding='utf-8') as f:
-                    f.write(f"\n{category_name},{category_icon}")
-                flash(f'✅ Category "{category_name}" added successfully!', 'success')
+                categories_collection.insert_one({
+                    'name': category_name,
+                    'icon': category_icon,
+                    'user_id': current_user.id
+                })
+                flash(f'✅ Category "{category_name}" added!', 'success')
             else:
-                flash('❌ Please provide both name and icon!', 'danger')
+                flash('❌ Provide both name and icon!', 'danger')
         
         elif action == 'delete':
-            category_to_delete = request.form.get('category_delete')
+            category_name = request.form.get('category_delete')
             
-            with open(CATEGORIES_FILE, "r", encoding='utf-8') as f:
-                lines = f.readlines()
+            result = categories_collection.delete_one({
+                'name': category_name,
+                'user_id': current_user.id
+            })
             
-            with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
-                for line in lines:
-                    if not line.strip().startswith(category_to_delete + ","):
-                        f.write(line)
-            
-            flash(f'🗑️ Category "{category_to_delete}" deleted!', 'success')
+            if result.deleted_count > 0:
+                flash(f'🗑️ Category "{category_name}" deleted!', 'success')
         
         return redirect(url_for('manage_categories'))
     
-    categories = get_categories()
+    categories = get_user_categories()
     return render_template("categories.html", categories=categories)
 
 
-def get_categories():
-    """Get all categories from file"""
-    categories = []
-    
-    try:
-        with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and ',' in line:
-                    parts = line.split(",", 1)
-                    if len(parts) == 2:
-                        categories.append({
-                            "name": parts[0],
-                            "icon": parts[1]
-                        })
-    except FileNotFoundError:
-        # Return default categories if file doesn't exist
-        categories = [
-            {"name": "Food", "icon": "🍔"},
-            {"name": "Entertainment", "icon": "🎭"},
-            {"name": "Shopping", "icon": "🛍️"},
-            {"name": "Bills", "icon": "📑"},
-            {"name": "Other", "icon": "💼"}
-        ]
-    
-    return categories
-
-
-@app.route('/reset-categories')
-def reset_categories():
-    """Reset categories to defaults"""
-    try:
-        default_categories_list = [
-            "Food,🍔",
-            "Entertainment,🎭",
-            "Shopping,🛍️",
-            "Bills,📑",
-            "Other,💼"
-        ]
-        
-        with open(CATEGORIES_FILE, "w", encoding='utf-8') as f:
-            f.write("\n".join(default_categories_list))
-        
-        flash('✅ Categories reset to defaults successfully!', 'success')
-    except Exception as e:
-        flash(f'❌ Error: {str(e)}', 'danger')
-    
-    return redirect(url_for('manage_categories'))
+def get_user_categories():
+    categories = list(categories_collection.find({'user_id': current_user.id}))
+    return [{'name': cat['name'], 'icon': cat['icon']} for cat in categories]
 
 
 @app.route('/insights')
+@login_required
 def generate_insights():
+    expenses = list(expenses_collection.find({'user_id': current_user.id}))
+    
     category_totals = defaultdict(int)
     monthly_totals = defaultdict(int)
     total_expenses = 0
     max_expense = 0
     highest_category = "None"
     ai_warnings = []
-
-    # Define spending thresholds
+    
     thresholds = {
         "Food": 0.3,
         "Entertainment": 0.15,
@@ -263,48 +338,21 @@ def generate_insights():
         "Bills": 0.25,
         "Other": 0.1
     }
-
-    try:
-        with open(EXPENSE_FILE, "r") as f:
-            lines = f.readlines()
-            
-            if lines and "Date" in lines[0]:  
-                lines = lines[1:]  
-
-            for line in lines:
-                data = line.strip().split(",")
-
-                if len(data) < 3:
-                    continue  
-                
-                category, amount, date_str = data  
-                try:
-                    amount = int(amount)
-                except ValueError:
-                    continue  
-                
-                try:
-                    date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-                except ValueError:
-                    try:
-                        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-                    except ValueError:
-                        continue
-                
-                month = date_obj.strftime("%Y-%m")
-
-                total_expenses += amount
-                category_totals[category] += amount
-                monthly_totals[month] += amount  
-
-                if amount > max_expense:
-                    max_expense = amount
-                    highest_category = category
-
-    except FileNotFoundError:
-        pass
-
-    # ✅ AI-BASED INSIGHTS
+    
+    for expense in expenses:
+        amount = int(expense['amount'])
+        category = expense['category']
+        date_obj = expense['date']
+        month = date_obj.strftime("%Y-%m")
+        
+        total_expenses += amount
+        category_totals[category] += amount
+        monthly_totals[month] += amount
+        
+        if amount > max_expense:
+            max_expense = amount
+            highest_category = category
+    
     if total_expenses > 0:
         for category, spent in category_totals.items():
             percentage = spent / total_expenses
@@ -329,17 +377,38 @@ def generate_insights():
     category_chart = generate_pie_chart(category_totals) if len(category_totals) > 1 else None
     trend_chart = generate_line_chart(monthly_totals) if monthly_totals else None
     
-    return render_template("insights.html", 
-                           total_expenses=total_expenses, 
-                           max_expense=max_expense, 
+    return render_template("insights.html",
+                           total_expenses=total_expenses,
+                           max_expense=max_expense,
                            highest_category=highest_category,
-                           category_totals=category_totals, 
-                           category_chart=category_chart, 
+                           category_totals=category_totals,
+                           category_chart=category_chart,
                            trend_chart=trend_chart,
                            ai_warnings=ai_warnings,
                            savings_recommendation=savings_recommendation)
 
 
+@app.route('/download')
+@login_required
+def download_expenses():
+    expenses = list(expenses_collection.find({'user_id': current_user.id}).sort('date', -1))
+    
+    if not expenses:
+        flash('🚨 No expenses to download!', 'danger')
+        return redirect(url_for('view_expenses'))
+    
+    csv_filename = f"expenses_{current_user.username}.csv"
+    csv_path = f"/tmp/{csv_filename}"
+    
+    with open(csv_path, 'w') as f:
+        f.write("Category,Amount,Date\n")
+        for exp in expenses:
+            f.write(f"{exp['category']},{exp['amount']},{exp['date'].strftime('%Y-%m-%d %H:%M:%S')}\n")
+    
+    return send_file(csv_path, as_attachment=True, download_name=csv_filename, mimetype="text/csv")
+
+
+# CHART GENERATION
 def generate_pie_chart(data):
     if not data:
         return None
@@ -354,7 +423,7 @@ def generate_pie_chart(data):
     colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F']
     explode = [0.05] * len(labels)
     
-    ax.pie(amounts, labels=labels, autopct='%1.1f%%', startangle=140, 
+    ax.pie(amounts, labels=labels, autopct='%1.1f%%', startangle=140,
            colors=colors, explode=explode, shadow=True,
            textprops={'fontsize': 11, 'weight': 'bold', 'color': 'black'})
     
@@ -376,8 +445,8 @@ def generate_line_chart(data):
     months = list(data.keys())
     amounts = list(data.values())
     
-    ax.plot(months, amounts, marker='o', linestyle='-', color='#4ECDC4', 
-            linewidth=2.5, markersize=8, markerfacecolor='#FF6B6B', 
+    ax.plot(months, amounts, marker='o', linestyle='-', color='#4ECDC4',
+            linewidth=2.5, markersize=8, markerfacecolor='#FF6B6B',
             markeredgecolor='#fff', markeredgewidth=2)
     
     ax.set_title("Monthly Spending Trends", fontsize=14, weight='bold', pad=15, color='black')
@@ -391,8 +460,8 @@ def generate_line_chart(data):
     ax.grid(True, alpha=0.3, linestyle='--', color='gray')
     
     for i, (month, amount) in enumerate(zip(months, amounts)):
-        ax.annotate(f'₹{amount}', (month, amount), 
-                   textcoords="offset points", xytext=(0,10), 
+        ax.annotate(f'₹{amount}', (month, amount),
+                   textcoords="offset points", xytext=(0, 10),
                    ha='center', fontsize=9, weight='bold', color='black')
     
     for spine in ax.spines.values():
@@ -409,34 +478,6 @@ def save_chart(fig):
     encoded = base64.b64encode(buffer.read()).decode()
     plt.close(fig)
     return f"data:image/png;base64,{encoded}"
-
-
-@app.route('/debug')
-def debug_file():
-    try:
-        with open(EXPENSE_FILE, "r") as f:
-            content = f.readlines()
-        return "<br>".join(content)
-    except FileNotFoundError:
-        return "🚨 No expenses recorded yet!"
-
-
-@app.route('/clear')
-def clear_expenses():
-    with open(EXPENSE_FILE, "w") as f:
-        f.write("Category,Amount,Date\n")  
-    
-    flash('🗑️ All expenses have been deleted!', 'info')
-    return redirect(url_for('view_expenses'))
-
-
-@app.route('/download')
-def download_expenses():
-    try:
-        return send_file(EXPENSE_FILE, as_attachment=True, download_name="expenses.csv", mimetype="text/csv")
-    except FileNotFoundError:
-        flash('🚨 No expenses recorded yet!', 'danger')
-        return redirect(url_for('view_expenses'))
 
 
 if __name__ == '__main__':
