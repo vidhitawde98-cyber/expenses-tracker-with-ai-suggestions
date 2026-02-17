@@ -1,5 +1,20 @@
-# ignore runtime data
-expenses.txt
+# Virtual Environment - NEVER push this
+.venv/
+venv/
+env/
 
-# but allow categories
-!categories.txt
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Data files - keep locally only
+expenses.txt
+categories.txt
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
