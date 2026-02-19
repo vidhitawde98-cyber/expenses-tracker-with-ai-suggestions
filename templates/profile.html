@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-lg">
+            <div class="card-body text-center">
+                <div style="font-size: 5rem; margin: 20px 0;">👤</div>
+                <h3>{{ current_user.username }}</h3>
+                <p class="text-muted">{{ current_user.email }}</p>
+                <p class="text-muted small">
+                    Member since: {{ user_data.created_at.strftime('%B %d, %Y') }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <h2 class="mb-4">📊 Account Statistics</h2>
+        
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white shadow">
+                    <div class="card-body text-center">
+                        <h1>{{ total_expenses }}</h1>
+                        <p class="mb-0">Total Transactions</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card bg-success text-white shadow">
+                    <div class="card-body text-center">
+                        <h1>₹{{ total_amount }}</h1>
+                        <p class="mb-0">Total Spent</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card bg-info text-white shadow">
+                    <div class="card-body text-center">
+                        <h1>{{ total_categories }}</h1>
+                        <p class="mb-0">Categories</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-lg mt-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">⚙️ Account Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Username</strong><br>
+                            <span class="text-muted">{{ current_user.username }}</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Email</strong><br>
+                            <span class="text-muted">{{ current_user.email }}</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Password</strong><br>
+                            <span class="text-muted">••••••••</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" disabled>Change (Coming Soon)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('home') }}" class="btn btn-primary">← Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
