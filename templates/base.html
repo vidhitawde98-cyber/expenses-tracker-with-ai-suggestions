@@ -26,8 +26,10 @@
                             👤 {{ current_user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">🚪 Logout</a></li>
-                        </ul>
+    <li><a class="dropdown-item" href="{{ url_for('profile') }}">👤 My Profile</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="{{ url_for('logout') }}">🚪 Logout</a></li>
+</ul>
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-light ms-2" id="darkModeToggle">🌙 Dark Mode</button>

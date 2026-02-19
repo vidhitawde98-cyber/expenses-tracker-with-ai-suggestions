@@ -1,24 +1,42 @@
 {% extends 'base.html' %}
-
 {% block title %}Add Expense{% endblock %}
-
 {% block content %}
-<h2 class="text-center">➕ Add Expense</h2>
-<form action="/add" method="POST" class="card p-4 shadow-lg">
-    <label for="category" class="form-label">Category:</label>
-    <select name="category" id="category" class="form-select" required>
-        {% for category in categories %}
-        <option value="{{ category.name }}">{{ category.icon }} {{ category.name }}</option>
-        {% endfor %}
-    </select>
-    <br>
-    <label for="amount" class="form-label">Amount (₹):</label>
-    <input type="number" name="amount" id="amount" class="form-control" required>
-    <br>
-    <button type="submit" class="btn btn-primary w-100">💾 Save Expense</button>
-</form>
 
-<div class="text-center mt-3">
-    <a href="/categories" class="btn btn-info">🏷️ Manage Categories</a>
+<h2 class="text-center">➕ Add New Expense</h2>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <form action="/add" method="POST" class="card p-4 shadow-lg">
+            <div class="mb-3">
+                <label for="category" class="form-label fw-bold">Category:</label>
+                <select name="category" id="category" class="form-select" required>
+                    {% for category in categories %}
+                    <option value="{{ category.name }}">{{ category.icon }} {{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="amount" class="form-label fw-bold">Amount (₹):</label>
+                <input type="number" name="amount" id="amount" class="form-control" 
+                       placeholder="Enter amount" required min="1" step="0.01">
+            </div>
+
+            <!-- NEW: Note field -->
+            <div class="mb-3">
+                <label for="note" class="form-label fw-bold">Note (Optional):</label>
+                <input type="text" name="note" id="note" class="form-control" 
+                       placeholder="e.g., Lunch with Sarah, Uber to office, Groceries" maxlength="100">
+                <small class="text-muted">Add details to remember this expense later</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2">💾 Save Expense</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="/categories" class="btn btn-info">🏷️ Manage Categories</a>
+        </div>
+    </div>
 </div>
+
 {% endblock %}

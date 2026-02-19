@@ -183,6 +183,32 @@ def logout():
     flash(f'👋 Goodbye, {username}! You have been logged out.', 'info')
     return redirect(url_for('login'))
 
+@app.route('/profile')
+@login_required
+def profile():
+    """User profile page"""
+    # Get user stats
+    total_expenses = expenses_collection.count_documents({'user_id': current_user.id})
+    
+    # Calculate total amount spent
+    pipeline = [
+        {'$match': {'user_id': current_user.id}},
+        {'$group': {'_id': None, 'total': {'$sum': '$amount'}}}
+    ]
+    result = list(expenses_collection.aggregate(pipeline))
+    total_amount = result[0]['total'] if result else 0
+    
+    # Get total categories
+    total_categories = categories_collection.count_documents({'user_id': current_user.id})
+    
+    # Get user data
+    user_data = users_collection.find_one({'_id': ObjectId(current_user.id)})
+    
+    return render_template('profile.html',
+                         total_expenses=total_expenses,
+                         total_amount=int(total_amount),
+                         total_categories=total_categories,
+                         user_data=user_data)
 
 # MAIN APP ROUTES
 @app.route('/')
@@ -202,11 +228,13 @@ def favicon():
 def add_expense():
     category = request.form['category']
     amount = request.form['amount']
+    note = request.form.get('note', '').strip()  # ← NEW: Get note
     
     expense_data = {
         'user_id': current_user.id,
         'category': category,
         'amount': float(amount),
+        'note': note,  # ← NEW: Store note
         'date': datetime.now()
     }
     
@@ -242,8 +270,8 @@ def view_expenses():
     expenses = list(expenses_collection.find(query).sort('date', -1))
     
     expenses_list = [
-        (exp['_id'], exp['category'], exp['amount'], exp['date'].strftime('%Y-%m-%d %H:%M:%S'))
-        for exp in expenses
+    (exp['_id'], exp['category'], exp['amount'], exp['date'].strftime('%Y-%m-%d %H:%M:%S'), exp.get('note', ''))
+    for exp in expenses
     ]
     
     return render_template("view_expenses.html", expenses=expenses_list)

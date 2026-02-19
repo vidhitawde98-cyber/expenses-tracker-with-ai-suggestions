@@ -29,33 +29,41 @@
 <div class="card shadow mb-4">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Category</th>
-                        <th>Amount (₹)</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for expense in expenses %}
-                    <tr>
-                        <td><strong>{{ expense[1] }}</strong></td>
-                        <td class="text-success fw-bold">₹{{ expense[2] }}</td>
-                        <td>{{ expense[3] }}</td>
-                        <td>
-                            <a href="{{ url_for('delete_expense', expense_id=expense[0]) }}"
-                               class="btn btn-danger btn-sm"
-                               onclick="return confirm('Delete this expense?')">
-                                🗑️ Delete
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <table class="table table-hover mb-0">
+        <thead class="table-dark">
+            <tr>
+                <th>Category</th>
+                <th>Amount (₹)</th>
+                <th>Note</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td><strong>{{ expense[1] }}</strong></td>
+                <td class="text-success fw-bold">₹{{ expense[2] }}</td>
+                <td>
+                    {% if expense[4] %}
+                        <span class="badge bg-secondary">{{ expense[4] }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>{{ expense[3] }}</td>
+                <td>
+                    <a href="{{ url_for('delete_expense', expense_id=expense[0]) }}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Delete this expense?')">
+                        🗑️ Delete
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
     </div>
 </div>
 
