@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Budget Management{% endblock %}
+{% block content %}
+
+<h2 class="text-center mb-4">💰 Budget Management</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-lg sticky-top" style="top: 20px">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">➕ Set Budget</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Category:</label>
+                        <select name="category" class="form-select" required>
+                            {% for cat in categories %}
+                            <option value="{{ cat.name }}">{{ cat.icon }} {{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Monthly Budget (₹):</label>
+                        <input type="number" name="budget_amount" class="form-control" 
+                               placeholder="e.g., 5000" required min="1" step="0.01">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">💾 Set Budget</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">📊 Current Month Budget Overview</h5>
+            </div>
+            <div class="card-body">
+                {% if budget_data %}
+                    {% for item in budget_data %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">{{ item.icon }} {{ item.category }}</h5>
+                            <span class="badge bg-{{ item.status }}">
+                                ₹{{ item.spent|int }} / ₹{{ item.budget|int }}
+                            </span>
+                        </div>
+                        
+                        {% if item.budget > 0 %}
+                        <div class="progress mb-2" style="height: 25px">
+                            <div class="progress-bar bg-{{ item.status }}" 
+                                 role="progressbar" 
+                                 style="width: {{ item.percentage }}%">
+                                {{ "%.1f"|format(item.percentage) }}%
+                            </div>
+                        </div>
+                        
+                        {% if item.percentage >= 100 %}
+                            <small class="text-danger fw-bold">
+                                ⚠️ Budget exceeded by ₹{{ (item.spent - item.budget)|int }}!
+                            </small>
+                        {% elif item.percentage >= 80 %}
+                            <small class="text-warning fw-bold">
+                                ⚠️ Warning: Only ₹{{ item.remaining|int }} remaining
+                            </small>
+                        {% else %}
+                            <small class="text-success">
+                                ✅ ₹{{ item.remaining|int }} remaining
+                            </small>
+                        {% endif %}
+                        {% else %}
+                        <p class="text-muted mb-0">
+                            <small>No budget set for this category</small>
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% if not loop.last %}<hr>{% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <h5>📋 No budgets set yet!</h5>
+                        <p class="mb-0">Use the form on the left to set your first budget.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="{{ url_for('home') }}" class="btn btn-primary">← Back to Dashboard</a>
+            <a href="{{ url_for('generate_insights') }}" class="btn btn-info">📊 View Insights</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

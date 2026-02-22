@@ -347,6 +347,86 @@ def get_user_categories():
     return [{'name': cat['name'], 'icon': cat['icon']} for cat in categories]
 
 
+@app.route('/budget', methods=['GET', 'POST'])
+@login_required
+def manage_budget():
+    """Manage category budgets"""
+    if request.method == 'POST':
+        category = request.form.get('category')
+        budget_amount = request.form.get('budget_amount')
+        
+        if category and budget_amount:
+            try:
+                budget_amount = float(budget_amount)
+                
+                # Update or insert budget
+                db['budgets'].update_one(
+                    {'user_id': current_user.id, 'category': category},
+                    {'$set': {'amount': budget_amount}},
+                    upsert=True
+                )
+                
+                flash(f'✅ Budget of ₹{budget_amount} set for {category}!', 'success')
+            except ValueError:
+                flash('❌ Invalid budget amount!', 'danger')
+        
+        return redirect(url_for('manage_budget'))
+    
+    # Get user categories
+    categories = get_user_categories()
+    
+    # Get existing budgets
+    budgets = list(db['budgets'].find({'user_id': current_user.id}))
+    budget_dict = {b['category']: b['amount'] for b in budgets}
+    
+    # Get current month spending per category
+    from datetime import datetime
+    start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    pipeline = [
+        {
+            '$match': {
+                'user_id': current_user.id,
+                'date': {'$gte': start_of_month}
+            }
+        },
+        {
+            '$group': {
+                '_id': '$category',
+                'spent': {'$sum': '$amount'}
+            }
+        }
+    ]
+    
+    spending = list(expenses_collection.aggregate(pipeline))
+    spending_dict = {s['_id']: s['spent'] for s in spending}
+    
+    # Prepare data for template
+    budget_data = []
+    for cat in categories:
+        cat_name = cat['name']
+        budget = budget_dict.get(cat_name, 0)
+        spent = spending_dict.get(cat_name, 0)
+        
+        if budget > 0:
+            percentage = (spent / budget) * 100
+            status = 'danger' if percentage >= 100 else ('warning' if percentage >= 80 else 'success')
+        else:
+            percentage = 0
+            status = 'secondary'
+        
+        budget_data.append({
+            'category': cat_name,
+            'icon': cat['icon'],
+            'budget': budget,
+            'spent': spent,
+            'remaining': max(0, budget - spent),
+            'percentage': min(100, percentage),
+            'status': status
+        })
+    
+    return render_template('budget.html', categories=categories, budget_data=budget_data)
+
 @app.route('/insights')
 @login_required
 def generate_insights():
@@ -381,7 +461,43 @@ def generate_insights():
             max_expense = amount
             highest_category = category
     
+    # AI-BASED INSIGHTS with Budget Integration
     if total_expenses > 0:
+        # Get current month's start
+        start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Get budgets
+        budgets = list(db['budgets'].find({'user_id': current_user.id}))
+        budget_dict = {b['category']: b['amount'] for b in budgets}
+        
+        # Get this month's spending
+        month_spending = defaultdict(int)
+        month_expenses = list(expenses_collection.find({
+            'user_id': current_user.id,
+            'date': {'$gte': start_of_month}
+        }))
+        
+        for exp in month_expenses:
+            month_spending[exp['category']] += exp['amount']
+        
+        # Check budgets first
+        for category, budget in budget_dict.items():
+            spent = month_spending.get(category, 0)
+            if spent > 0:
+                percentage = (spent / budget) * 100
+                if percentage >= 100:
+                    ai_warnings.append({
+                        "type": "danger",
+                        "message": f"🚨 BUDGET ALERT: You've exceeded your {category} budget by ₹{int(spent - budget)}!"
+                    })
+                elif percentage >= 80:
+                    remaining = budget - spent
+                    ai_warnings.append({
+                        "type": "warning",
+                        "message": f"⚠️ Budget Warning: Only ₹{int(remaining)} left in {category} budget!"
+                    })
+        
+        # Then check thresholds
         for category, spent in category_totals.items():
             percentage = spent / total_expenses
             
