@@ -17,7 +17,7 @@ body {
     background-color: #222 !important;
 }
 
-/* ✅ FIX: Button Styling - Ensure text is ALWAYS visible */
+/* Button Styling - Ensure text is ALWAYS visible */
 .btn-primary {
     background-color: #0d6efd;
     border-color: #0d6efd;
@@ -27,7 +27,7 @@ body {
 .btn-info {
     background-color: #0dcaf0;
     border-color: #0dcaf0;
-    color: #000000 !important;  /* Dark text for better contrast */
+    color: #000000 !important;
 }
 
 .btn-success {
@@ -63,7 +63,7 @@ body {
 .dark-mode .btn-info {
     background-color: #0dcaf0 !important;
     border-color: #0dcaf0 !important;
-    color: #000000 !important;  /* ✅ Ensure dark text on light blue */
+    color: #000000 !important;
 }
 
 .dark-mode .btn-success {
@@ -84,7 +84,7 @@ body {
     color: #ffffff !important;
 }
 
-/* ✅ Better button styling */
+/* Better button styling */
 .btn {
     margin: 5px;
     padding: 10px 20px;
@@ -180,12 +180,12 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ✅ Footer styling */
+/* Footer styling */
 footer {
     margin-top: auto;
 }
 
-/* ✅ Flash Message Styling */
+/* Flash Message Styling */
 .alert {
     border-radius: 8px;
     font-weight: 500;
@@ -230,4 +230,63 @@ footer {
 
 .dark-mode .btn-close {
     filter: invert(1);
+}
+
+/* ===== NEW: DARK MODE TEXT VISIBILITY FIXES ===== */
+
+/* Budget page - ensure all text is visible */
+.dark-mode h5,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4 {
+    color: #ffffff !important;
+}
+
+.dark-mode small,
+.dark-mode p {
+    color: #cccccc !important;
+}
+
+/* Profile page - make username and email visible */
+.dark-mode .list-group-item .text-muted {
+    color: #aaaaaa !important;
+}
+
+.dark-mode .list-group-item strong {
+    color: #ffffff !important;
+}
+
+/* Budget overview text */
+.dark-mode .badge {
+    color: #ffffff !important;
+}
+
+/* Form labels in dark mode */
+.dark-mode .form-label {
+    color: #ffffff !important;
+}
+
+/* Card headers in dark mode - keep them readable */
+.dark-mode .card-header {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #444 !important;
+}
+
+/* Ensure select dropdowns are readable */
+.dark-mode .form-select,
+.dark-mode .form-control {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    border-color: #444 !important;
+}
+
+.dark-mode .form-select option {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}
+
+/* Progress bar percentage text */
+.dark-mode .progress-bar {
+    color: #ffffff !important;
 }
