@@ -17,7 +17,7 @@ body {
     background-color: #222 !important;
 }
 
-/* Button Styling - Ensure text is ALWAYS visible */
+/* ===== BUTTON STYLING ===== */
 .btn-primary {
     background-color: #0d6efd;
     border-color: #0d6efd;
@@ -45,6 +45,12 @@ body {
 .btn-danger {
     background-color: #dc3545;
     border-color: #dc3545;
+    color: #ffffff !important;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
     color: #ffffff !important;
 }
 
@@ -84,7 +90,12 @@ body {
     color: #ffffff !important;
 }
 
-/* Better button styling */
+.dark-mode .btn-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: #ffffff !important;
+}
+
 .btn {
     margin: 5px;
     padding: 10px 20px;
@@ -99,63 +110,76 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* Dark Mode for Bootstrap Components */
+/* ===== DARK MODE COMPONENTS ===== */
 .dark-mode .container, 
-.dark-mode .card, 
-.dark-mode .table {
+.dark-mode .card {
     background-color: #1e1e1e !important;
     color: #ffffff !important;
 }
 
 .dark-mode .card-body {
     background-color: #1e1e1e !important;
-}
-
-/* Alert boxes in dark mode */
-.dark-mode .alert {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dark-mode .alert-info {
-    background-color: #1a3a52 !important;
     color: #ffffff !important;
 }
 
-.dark-mode .alert-warning {
-    background-color: #4d3800 !important;
+/* Card headers */
+.card-header {
     color: #ffffff !important;
 }
 
-.dark-mode .alert-success {
-    background-color: #0f3b29 !important;
+.dark-mode .card-header {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #444 !important;
+}
+
+/* ===== TEXT AND HEADINGS ===== */
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4,
+.dark-mode h5,
+.dark-mode h6 {
     color: #ffffff !important;
 }
 
-/* Links in Dark Mode */
-.dark-mode a {
-    color: #00c8ff !important;
+.dark-mode p,
+.dark-mode small,
+.dark-mode span:not(.badge) {
+    color: #cccccc !important;
 }
 
-.dark-mode a:hover {
-    color: #33d4ff !important;
+.dark-mode label,
+.dark-mode .form-label {
+    color: #ffffff !important;
 }
 
-/* List groups in dark mode */
-.dark-mode .list-group-item {
+/* ===== FORMS ===== */
+.dark-mode .form-select,
+.dark-mode .form-control {
     background-color: #2a2a2a !important;
     color: #ffffff !important;
     border-color: #444 !important;
 }
 
-/* Badges in dark mode */
-.dark-mode .badge {
-    background-color: #0d6efd !important;
+.dark-mode .form-select option {
+    background-color: #2a2a2a !important;
     color: #ffffff !important;
 }
 
-/* Table styling in dark mode */
+.dark-mode .form-control::placeholder {
+    color: #888 !important;
+}
+
+/* ===== TABLES ===== */
+.dark-mode .table {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+}
+
 .dark-mode .table-dark {
     background-color: #1a1a1a !important;
+    color: #ffffff !important;
 }
 
 .dark-mode .table-bordered td,
@@ -163,29 +187,25 @@ body {
     border-color: #444 !important;
 }
 
-/* Card styling */
-.card {
-    border-radius: 10px;
-    margin-bottom: 20px;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.dark-mode thead {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
 }
 
-.dark-mode .card {
-    box-shadow: 0 2px 4px rgba(255,255,255,0.1);
+.dark-mode tbody tr {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
 }
 
-/* Smooth transitions */
-* {
-    transition: background-color 0.3s ease, color 0.3s ease;
+.dark-mode tbody td {
+    color: #ffffff !important;
 }
 
-/* Footer styling */
-footer {
-    margin-top: auto;
+.dark-mode tbody td strong {
+    color: #ffffff !important;
 }
 
-/* Flash Message Styling */
+/* ===== ALERTS ===== */
 .alert {
     border-radius: 8px;
     font-weight: 500;
@@ -203,7 +223,10 @@ footer {
     }
 }
 
-/* Dark mode flash messages */
+.dark-mode .alert {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .dark-mode .alert-success {
     background-color: #0f5132 !important;
     color: #d1e7dd !important;
@@ -232,61 +255,59 @@ footer {
     filter: invert(1);
 }
 
-/* ===== NEW: DARK MODE TEXT VISIBILITY FIXES ===== */
+/* ===== LINKS ===== */
+.dark-mode a:not(.btn) {
+    color: #00c8ff !important;
+}
 
-/* Budget page - ensure all text is visible */
-.dark-mode h5,
-.dark-mode h2,
-.dark-mode h3,
-.dark-mode h4 {
+.dark-mode a:not(.btn):hover {
+    color: #33d4ff !important;
+}
+
+/* ===== LIST GROUPS ===== */
+.dark-mode .list-group-item {
+    background-color: #2a2a2a !important;
     color: #ffffff !important;
-}
-
-.dark-mode small,
-.dark-mode p {
-    color: #cccccc !important;
-}
-
-/* Profile page - make username and email visible */
-.dark-mode .list-group-item .text-muted {
-    color: #aaaaaa !important;
+    border-color: #444 !important;
 }
 
 .dark-mode .list-group-item strong {
     color: #ffffff !important;
 }
 
-/* Budget overview text */
+.dark-mode .list-group-item .text-muted {
+    color: #aaaaaa !important;
+}
+
+/* ===== BADGES ===== */
 .dark-mode .badge {
     color: #ffffff !important;
 }
 
-/* Form labels in dark mode */
-.dark-mode .form-label {
-    color: #ffffff !important;
-}
-
-/* Card headers in dark mode - keep them readable */
-.dark-mode .card-header {
-    background-color: #2a2a2a !important;
-    color: #ffffff !important;
-    border-bottom: 1px solid #444 !important;
-}
-
-/* Ensure select dropdowns are readable */
-.dark-mode .form-select,
-.dark-mode .form-control {
-    background-color: #2a2a2a !important;
-    color: #ffffff !important;
-    border-color: #444 !important;
-}
-
-.dark-mode .form-select option {
-    background-color: #2a2a2a !important;
-    color: #ffffff !important;
-}
-
-/* Progress bar percentage text */
+/* ===== PROGRESS BARS ===== */
 .dark-mode .progress-bar {
+    color: #ffffff !important;
+}
+
+/* ===== CARDS ===== */
+.card {
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dark-mode .card {
+    box-shadow: 0 2px 4px rgba(255,255,255,0.1);
+    border: 1px solid #333 !important;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    margin-top: auto;
+}
+
+.dark-mode footer {
+    background-color: #222 !important;
     color: #ffffff !important;
 }

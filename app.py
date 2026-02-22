@@ -210,6 +210,52 @@ def profile():
                          total_categories=total_categories,
                          user_data=user_data)
 
+@app.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """Change user password"""
+    if request.method == 'POST':
+        old_password = request.form.get('old_password', '')
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        # Get user data
+        user_data = users_collection.find_one({'_id': ObjectId(current_user.id)})
+        
+        ## Verify old password
+        if not check_password_hash(user_data['password'], old_password):
+           flash('❌ Current password is incorrect!', 'danger')
+           return redirect(url_for('change_password'))
+
+        # Check if new password is same as old password 
+        if old_password == new_password:
+           flash('❌ New password must be different from current password!', 'warning')
+           return redirect(url_for('change_password'))
+
+        # Validate new password
+        if len(new_password) < 6:
+            flash('❌ New password must be at least 6 characters!', 'danger')
+            return redirect(url_for('change_password'))
+        
+        if new_password != confirm_password:
+            flash('❌ New passwords do not match!', 'danger')
+            return redirect(url_for('change_password'))
+        
+        # Update password
+        hashed_password = generate_password_hash(new_password, method='pbkdf2:sha256')
+        users_collection.update_one(
+            {'_id': ObjectId(current_user.id)},
+            {'$set': {'password': hashed_password}}
+        )
+        
+        flash('✅ Password changed successfully!', 'success')
+        return redirect(url_for('profile'))
+    
+    return render_template('change_password.html')
+
+
+
+
 # MAIN APP ROUTES
 @app.route('/')
 @login_required
