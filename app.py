@@ -624,5 +624,39 @@ def save_chart(fig):
     return f"data:image/png;base64,{encoded}"
 
 
+@app.route('/download-pdf')
+@login_required
+def download_pdf():
+    """Generate and download PDF report with charts"""
+    from pdf_generator import create_pdf_report
+    
+    # Get user's expenses
+    expenses = list(expenses_collection.find({'user_id': current_user.id}).sort('date', -1))
+    
+    if not expenses:
+        flash('🚨 No expenses to generate report!', 'danger')
+        return redirect(url_for('view_expenses'))
+    
+    # Calculate category totals for chart
+    category_totals = defaultdict(int)
+    for expense in expenses:
+        category_totals[expense['category']] += int(expense['amount'])
+    
+    # Generate chart
+    category_chart = generate_pie_chart(category_totals) if len(category_totals) > 1 else None
+    
+    # Generate PDF
+    pdf_buffer = create_pdf_report(expenses, current_user.username, category_chart)
+    
+    # Send file
+    pdf_filename = f"expense_report_{current_user.username}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=pdf_filename,
+        mimetype='application/pdf'
+    )
+
 if __name__ == '__main__':
     app.run(debug=True)
