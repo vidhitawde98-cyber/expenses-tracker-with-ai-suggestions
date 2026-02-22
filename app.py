@@ -253,7 +253,44 @@ def change_password():
     
     return render_template('change_password.html')
 
-
+@app.route('/delete-account', methods=['GET', 'POST'])
+@login_required
+def delete_account():
+    """Delete user account and all associated data"""
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm_text = request.form.get('confirm_text', '').strip()
+        
+        # Get user data
+        user_data = users_collection.find_one({'_id': ObjectId(current_user.id)})
+        
+        # Verify password
+        if not check_password_hash(user_data['password'], password):
+            flash('❌ Incorrect password!', 'danger')
+            return redirect(url_for('delete_account'))
+        
+        # Verify confirmation text
+        if confirm_text.upper() != 'DELETE':
+            flash('❌ You must type DELETE to confirm!', 'danger')
+            return redirect(url_for('delete_account'))
+        
+        # Store username for goodbye message
+        username = current_user.username
+        user_id = current_user.id
+        
+        # Delete all user data
+        expenses_collection.delete_many({'user_id': user_id})
+        categories_collection.delete_many({'user_id': user_id})
+        db['budgets'].delete_many({'user_id': user_id})
+        users_collection.delete_one({'_id': ObjectId(user_id)})
+        
+        # Logout user
+        logout_user()
+        
+        flash(f'💔 Account deleted successfully. Goodbye, {username}!', 'info')
+        return redirect(url_for('register'))
+    
+    return render_template('delete_account.html')
 
 
 # MAIN APP ROUTES
@@ -341,6 +378,66 @@ def delete_expense(expense_id):
         flash(f'❌ Error: {str(e)}', 'danger')
     
     return redirect(url_for('view_expenses'))
+
+@app.route('/edit/<expense_id>', methods=['GET', 'POST'])
+@login_required
+def edit_expense(expense_id):
+    """Edit an existing expense"""
+    try:
+        # Get the expense
+        expense = expenses_collection.find_one({
+            '_id': ObjectId(expense_id),
+            'user_id': current_user.id
+        })
+        
+        if not expense:
+            flash('❌ Expense not found!', 'danger')
+            return redirect(url_for('view_expenses'))
+        
+        if request.method == 'POST':
+            category = request.form.get('category')
+            amount = request.form.get('amount')
+            note = request.form.get('note', '').strip()
+            date_str = request.form.get('date')
+            
+            # Validate
+            if not category or not amount:
+                flash('❌ Category and amount are required!', 'danger')
+                return redirect(url_for('edit_expense', expense_id=expense_id))
+            
+            # Parse date
+            try:
+                if date_str:
+                    expense_date = datetime.strptime(date_str, '%Y-%m-%d')
+                else:
+                    expense_date = expense['date']
+            except ValueError:
+                flash('❌ Invalid date format!', 'danger')
+                return redirect(url_for('edit_expense', expense_id=expense_id))
+            
+            # Update expense
+            expenses_collection.update_one(
+                {'_id': ObjectId(expense_id), 'user_id': current_user.id},
+                {'$set': {
+                    'category': category,
+                    'amount': float(amount),
+                    'note': note,
+                    'date': expense_date
+                }}
+            )
+            
+            flash(f'✅ Expense updated successfully!', 'success')
+            return redirect(url_for('view_expenses'))
+        
+        # GET request - show edit form
+        categories = get_user_categories()
+        return render_template('edit_expense.html', 
+                             expense=expense, 
+                             categories=categories)
+    
+    except Exception as e:
+        flash(f'❌ Error: {str(e)}', 'danger')
+        return redirect(url_for('view_expenses'))
 
 
 @app.route('/clear')
@@ -581,6 +678,8 @@ def generate_insights():
 @app.route('/download')
 @login_required
 def download_expenses():
+    import tempfile
+
     expenses = list(expenses_collection.find({'user_id': current_user.id}).sort('date', -1))
     
     if not expenses:
@@ -588,11 +687,12 @@ def download_expenses():
         return redirect(url_for('view_expenses'))
     
     csv_filename = f"expenses_{current_user.username}.csv"
-    csv_path = f"/tmp/{csv_filename}"
+    csv_path = os.path.join(tempfile.gettempdir(), csv_filename)
     
     with open(csv_path, 'w') as f:
         f.write("Category,Amount,Date\n")
         for exp in expenses:
+            note = exp.get('note', '').replace(',', ';')  # Replace commas in notes
             f.write(f"{exp['category']},{exp['amount']},{exp['date'].strftime('%Y-%m-%d %H:%M:%S')}\n")
     
     return send_file(csv_path, as_attachment=True, download_name=csv_filename, mimetype="text/csv")

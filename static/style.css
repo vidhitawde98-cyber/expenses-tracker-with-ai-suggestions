@@ -311,3 +311,29 @@ footer {
     background-color: #222 !important;
     color: #ffffff !important;
 }
+/* ===== TABLE ROWS FIX FOR DARK MODE ===== */
+.dark-mode table tbody tr {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+.dark-mode table tbody tr:hover {
+    background-color: #f8f9fa !important;
+}
+
+.dark-mode table tbody td {
+    color: #000000 !important;
+}
+
+.dark-mode table tbody td strong {
+    color: #000000 !important;
+}
+
+.dark-mode table thead {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+.dark-mode table thead th {
+    color: #ffffff !important;
+}

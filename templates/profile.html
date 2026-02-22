@@ -78,9 +78,24 @@
         </div>
 
         <div class="text-center mt-4">
-            <a href="{{ url_for('home') }}" class="btn btn-primary">← Back to Dashboard</a>
+          <a href="{{ url_for('home') }}" class="btn btn-primary">← Back to Dashboard</a>
         </div>
-    </div>
-</div>
+
+        <hr class="my-4">
+
+        <div class="card shadow-lg border-danger mt-4">
+          <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">⚠️ Danger Zone</h5>
+          </div>
+          <div class="card-body">
+            <p class="mb-3">
+              <strong>Delete Account:</strong> Once you delete your account, there is no going back. 
+               This will permanently delete all your data.
+            </p>
+            <a href="{{ url_for('delete_account') }}" class="btn btn-danger">
+               💀 Delete My Account
+            </a>
+          </div>
+        </div>
 
 {% endblock %}

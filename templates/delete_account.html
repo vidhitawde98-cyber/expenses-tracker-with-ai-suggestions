@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Delete Account{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">⚠️ Delete Account</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">🚨 Warning: This action is PERMANENT!</h5>
+                    <hr>
+                    <p class="mb-0">This will immediately and permanently delete:</p>
+                    <ul class="mt-2">
+                        <li>Your account</li>
+                        <li>All your expenses</li>
+                        <li>All your categories</li>
+                        <li>All your budgets</li>
+                    </ul>
+                    <p class="mt-2 mb-0"><strong>This action CANNOT be undone!</strong></p>
+                </div>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Confirm Your Password:</label>
+                        <input type="password" name="password" class="form-control" 
+                               placeholder="Enter your password to confirm" required autofocus>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Type "DELETE" to confirm:</label>
+                        <input type="text" name="confirm_text" class="form-control" 
+                               placeholder="Type DELETE in capital letters" required>
+                        <small class="text-muted">You must type exactly: DELETE</small>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <strong>⏰ Last chance!</strong> Once you click the button below, there's no going back.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg fw-bold"
+                                onclick="return confirm('Are you ABSOLUTELY sure? This will delete EVERYTHING!')">
+                            💀 DELETE MY ACCOUNT PERMANENTLY
+                        </button>
+                        <a href="{{ url_for('profile') }}" class="btn btn-secondary">
+                            ← Cancel (Keep My Account)
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
