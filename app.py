@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import os
 import base64
 from io import BytesIO
+import certifi
+
 
 app = Flask(__name__, template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'vidhi-expense-tracker-secret-2024')
@@ -19,6 +21,7 @@ app.secret_key = os.environ.get('SECRET_KEY', 'vidhi-expense-tracker-secret-2024
 MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
 client = MongoClient(
     MONGO_URI,
+    tlsCAFile=certifi.where(),
     serverSelectionTimeoutMS=30000
 )
 db = client['expense_tracker']
