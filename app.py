@@ -19,11 +19,14 @@ app.secret_key = os.environ.get('SECRET_KEY', 'vidhi-expense-tracker-secret-2024
 
 # MongoDB Configuration
 MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
+
 client = MongoClient(
     MONGO_URI,
-    tlsCAFile=certifi.where(),
+    tls=True,
+    tlsAllowInvalidCertificates=True,
     serverSelectionTimeoutMS=30000
 )
+
 db = client['expense_tracker']
 
 # Collections
