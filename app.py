@@ -4,13 +4,18 @@ from flask import Flask, render_template, request, send_file, redirect, url_for,
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import matplotlib.pyplot as plt
 import os
 import base64
 from io import BytesIO
 import psycopg2
 from psycopg2.extras import RealDictCursor
+
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def now_ist():
+    return datetime.now(IST).replace(tzinfo=None)
 
 app = Flask(__name__, template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'vidhi-expense-tracker-secret-2024')
@@ -389,7 +394,7 @@ def add_expense():
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO expenses (user_id, category, amount, note, date) VALUES (%s, %s, %s, %s, %s)",
-        (int(current_user.id), category, float(amount), note, datetime.now())
+        (int(current_user.id), category, float(amount), note, now_ist())
     )
     conn.commit()
     cur.close()
@@ -612,7 +617,7 @@ def manage_budget():
     cur.execute("SELECT category, amount FROM budgets WHERE user_id = %s", (int(current_user.id),))
     budget_dict = {b['category']: b['amount'] for b in cur.fetchall()}
 
-    start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    start_of_month = now_ist().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     cur.execute('''
         SELECT category, SUM(amount) as spent
         FROM expenses
@@ -676,7 +681,7 @@ def generate_insights():
             highest_category = category
 
     if total_expenses > 0:
-        start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        start_of_month = now_ist().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         cur.execute("SELECT category, amount FROM budgets WHERE user_id = %s", (int(current_user.id),))
         budget_dict = {b['category']: b['amount'] for b in cur.fetchall()}
 
@@ -828,7 +833,7 @@ def download_pdf():
 
     category_chart = generate_pie_chart(category_totals) if len(category_totals) > 1 else None
     pdf_buffer = create_pdf_report(expenses, current_user.username, category_chart)
-    pdf_filename = f"expense_report_{current_user.username}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    pdf_filename = f"expense_report_{current_user.username}_{now_ist().strftime('%Y%m%d')}.pdf"
 
     return send_file(pdf_buffer, as_attachment=True,
                      download_name=pdf_filename, mimetype='application/pdf')
