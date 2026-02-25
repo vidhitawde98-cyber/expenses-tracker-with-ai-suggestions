@@ -6,27 +6,29 @@
 
 <form action="{{ url_for('view_expenses') }}" method="GET" class="card p-3 shadow-sm mb-4">
     <div class="row g-2">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <input type="text" name="category" class="form-control"
                    placeholder="🔍 Search by Category"
                    value="{{ request.args.get('category', '') }}">
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <input type="date" name="start_date" class="form-control"
                    value="{{ request.args.get('start_date', '') }}">
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <input type="date" name="end_date" class="form-control"
                    value="{{ request.args.get('end_date', '') }}">
         </div>
-        <div class="col-md-2">
+        <div class="col-12 col-md-2">
             <button type="submit" class="btn btn-success w-100">🔍 Search</button>
         </div>
     </div>
 </form>
 
 {% if expenses %}
-<div class="card shadow mb-4">
+
+<!-- DESKTOP TABLE (hidden on mobile) -->
+<div class="d-none d-md-block card shadow mb-4">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
@@ -53,15 +55,11 @@
                         </td>
                         <td>{{ expense[3] }}</td>
                         <td>
-                            <a href="{{ url_for('edit_expense', expense_id=expense[0]) }}" 
-                               class="btn btn-warning btn-sm">
-                                ✏️ Edit
-                            </a>
+                            <a href="{{ url_for('edit_expense', expense_id=expense[0]) }}"
+                               class="btn btn-warning btn-sm">✏️ Edit</a>
                             <a href="{{ url_for('delete_expense', expense_id=expense[0]) }}"
                                class="btn btn-danger btn-sm"
-                               onclick="return confirm('Delete this expense?')">
-                                🗑️ Delete
-                            </a>
+                               onclick="return confirm('Delete this expense?')">🗑️ Delete</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -71,14 +69,37 @@
     </div>
 </div>
 
-<div class="d-flex justify-content-between flex-wrap gap-2 mb-5">
-    <a href="{{ url_for('home') }}" class="btn btn-primary">➕ Add New Expense</a>
-    <a href="{{ url_for('download_expenses') }}" class="btn btn-success">⬇️ Download CSV</a>
-    <a href="{{ url_for('download_pdf') }}" class="btn btn-danger">📄 Download PDF Report</a>
+<!-- MOBILE CARDS (hidden on desktop) -->
+<div class="d-md-none">
+    {% for expense in expenses %}
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0 fw-bold">{{ expense[1] }}</h5>
+                <span class="badge bg-success fs-6">₹{{ expense[2] }}</span>
+            </div>
+            {% if expense[4] %}
+            <p class="mb-1"><span class="badge bg-secondary">{{ expense[4] }}</span></p>
+            {% endif %}
+            <p class="text-muted small mb-3">🕐 {{ expense[3] }}</p>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('edit_expense', expense_id=expense[0]) }}"
+                   class="btn btn-warning btn-sm flex-fill">✏️ Edit</a>
+                <a href="{{ url_for('delete_expense', expense_id=expense[0]) }}"
+                   class="btn btn-danger btn-sm flex-fill"
+                   onclick="return confirm('Delete this expense?')">🗑️ Delete</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
+    <a href="{{ url_for('home') }}" class="btn btn-primary">➕ Add New</a>
+    <a href="{{ url_for('download_expenses') }}" class="btn btn-success">⬇️ CSV</a>
+    <a href="{{ url_for('download_pdf') }}" class="btn btn-danger">📄 PDF</a>
     <a href="{{ url_for('clear_expenses') }}" class="btn btn-danger"
-       onclick="return confirm('Delete ALL expenses? Cannot be undone!')">
-        🗑️ Clear All
-    </a>
+       onclick="return confirm('Delete ALL expenses? Cannot be undone!')">🗑️ Clear All</a>
 </div>
 
 {% else %}

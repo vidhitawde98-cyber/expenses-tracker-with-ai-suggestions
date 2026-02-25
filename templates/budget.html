@@ -5,10 +5,10 @@
 <h2 class="text-center mb-4">💰 Budget Management</h2>
 
 <div class="row">
-    <div class="col-md-4">
-        <div class="card shadow-lg sticky-top" style="top: 20px">
+    <div class="col-12 col-md-4 mb-4">
+        <div class="card shadow-lg">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">➕ Set Budget</h5>
+                <h5 class="mb-0">➕ Set / Update Budget</h5>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -22,16 +22,19 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Monthly Budget (₹):</label>
-                        <input type="number" name="budget_amount" class="form-control" 
+                        <input type="number" name="budget_amount" class="form-control"
                                placeholder="e.g., 5000" required min="1" step="0.01">
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">💾 Set Budget</button>
+                    <button type="submit" class="btn btn-primary w-100">💾 Save Budget</button>
                 </form>
+                <div class="alert alert-info mt-3 mb-0 small">
+                    💡 Saving a budget for a category that already has one will <strong>update</strong> it.
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-8">
+    <div class="col-12 col-md-8">
         <div class="card shadow-lg mb-4">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">📊 Current Month Budget Overview</h5>
@@ -40,22 +43,53 @@
                 {% if budget_data %}
                     {% for item in budget_data %}
                     <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                             <h5 class="mb-0">{{ item.icon }} {{ item.category }}</h5>
-                            <span class="badge bg-{{ item.status }}">
-                                ₹{{ item.spent|int }} / ₹{{ item.budget|int }}
-                            </span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-{{ item.status }}">
+                                    ₹{{ item.spent|int }} / ₹{{ item.budget|int }}
+                                </span>
+                                {% if item.budget > 0 %}
+                                <!-- Edit button triggers inline form -->
+                                <button class="btn btn-warning btn-sm"
+                                        onclick="toggleEdit('{{ item.category }}')">
+                                    ✏️ Edit
+                                </button>
+                                <!-- Delete button -->
+                                <form method="POST" action="{{ url_for('delete_budget') }}" 
+                                      style="display:inline"
+                                      onsubmit="return confirm('Delete budget for {{ item.category }}?')">
+                                    <input type="hidden" name="category" value="{{ item.category }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                                </form>
+                                {% endif %}
+                            </div>
                         </div>
-                        
+
+                        <!-- Inline edit form (hidden by default) -->
+                        {% if item.budget > 0 %}
+                        <div id="edit-{{ item.category }}" style="display:none;" class="mb-2">
+                            <form method="POST" class="d-flex gap-2 align-items-center">
+                                <input type="hidden" name="category" value="{{ item.category }}">
+                                <input type="number" name="budget_amount" class="form-control form-control-sm"
+                                       value="{{ item.budget|int }}" min="1" step="0.01" required
+                                       style="max-width: 150px;">
+                                <button type="submit" class="btn btn-success btn-sm">💾 Save</button>
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                        onclick="toggleEdit('{{ item.category }}')">✕</button>
+                            </form>
+                        </div>
+                        {% endif %}
+
                         {% if item.budget > 0 %}
                         <div class="progress mb-2" style="height: 25px">
-                            <div class="progress-bar bg-{{ item.status }}" 
-                                 role="progressbar" 
+                            <div class="progress-bar bg-{{ item.status }}"
+                                 role="progressbar"
                                  style="width: {{ item.percentage }}%">
                                 {{ "%.1f"|format(item.percentage) }}%
                             </div>
                         </div>
-                        
+
                         {% if item.percentage >= 100 %}
                             <small class="text-danger fw-bold">
                                 ⚠️ Budget exceeded by ₹{{ (item.spent - item.budget)|int }}!
@@ -71,7 +105,7 @@
                         {% endif %}
                         {% else %}
                         <p class="text-muted mb-0">
-                            <small>No budget set for this category</small>
+                            <small>No budget set — use the form to set one.</small>
                         </p>
                         {% endif %}
                     </div>
@@ -80,7 +114,7 @@
                 {% else %}
                     <div class="alert alert-info text-center">
                         <h5>📋 No budgets set yet!</h5>
-                        <p class="mb-0">Use the form on the left to set your first budget.</p>
+                        <p class="mb-0">Use the form to set your first budget.</p>
                     </div>
                 {% endif %}
             </div>
@@ -92,5 +126,12 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleEdit(category) {
+    const el = document.getElementById('edit-' + category);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
 
 {% endblock %}

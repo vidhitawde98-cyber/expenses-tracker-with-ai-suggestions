@@ -648,6 +648,19 @@ def manage_budget():
 
     return render_template('budget.html', categories=categories, budget_data=budget_data)
 
+@app.route('/budget/delete', methods=['POST'])
+@login_required
+def delete_budget():
+    category = request.form.get('category')
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM budgets WHERE user_id = %s AND category = %s",
+                (int(current_user.id), category))
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash(f'🗑️ Budget for {category} deleted!', 'success')
+    return redirect(url_for('manage_budget'))
 
 @app.route('/insights')
 @login_required
