@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Expense Tracker{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
 </head>
 <body class="light-mode">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -34,6 +34,9 @@
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-light ms-2" id="darkModeToggle">🌙 Dark Mode</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light ms-2" id="accessibilityToggle">♿ Accessibility</button>
                     </li>
                     {% endif %}
                 </ul>
@@ -65,6 +68,87 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='script.js') }}?v=4"></script>
+    <script src="{{ url_for('static', filename='script.js') }}?v=5"></script>
+
+    <!-- ACCESSIBILITY PANEL -->
+    <div id="accessibilityPanel" style="display:none;">
+        <div id="accessibilityOverlay"></div>
+        <div id="accessibilityBox">
+            <div id="accessibilityHeader">
+                <span>♿ Accessibility</span>
+                <button id="accessibilityClose">✕</button>
+            </div>
+            <div id="accessibilityContent">
+
+                <div class="acc-section">
+                    <h6>👁️ Visual</h6>
+                    <div class="acc-grid">
+                        <button class="acc-btn" data-feature="highContrast">⚡ High Contrast</button>
+                        <button class="acc-btn" data-feature="grayscale">🩶 Grayscale</button>
+                        <button class="acc-btn" data-feature="darkHighContrast">🌑 Dark Contrast</button>
+                        <button class="acc-btn" data-feature="lightBackground">☀️ Light BG</button>
+                        <button class="acc-btn" data-feature="hideImages">🚫 Hide Images</button>
+                        <button class="acc-btn" data-feature="bigCursor">🖱️ Big Cursor</button>
+                    </div>
+                </div>
+
+                <div class="acc-section">
+                    <h6>🔤 Text</h6>
+                    <div class="acc-grid">
+                        <button class="acc-btn" data-feature="dyslexiaFont">📖 Dyslexia Font</button>
+                        <button class="acc-btn" data-feature="readableFont">🔡 Readable Font</button>
+                        <button class="acc-btn" data-feature="highlightLinks">🔗 Highlight Links</button>
+                        <button class="acc-btn" data-feature="highlightHeaders">📌 Highlight Headings</button>
+                    </div>
+                    <div class="acc-font-size">
+                        <span>Font Size:</span>
+                        <button id="fontDecrease">A−</button>
+                        <span id="fontSizeLabel">100%</span>
+                        <button id="fontIncrease">A+</button>
+                        <button id="fontReset">Reset</button>
+                    </div>
+                    <div class="acc-font-size mt-2">
+                        <span>Line Height:</span>
+                        <button id="lineDecrease">−</button>
+                        <span id="lineSizeLabel">Normal</span>
+                        <button id="lineIncrease">+</button>
+                    </div>
+                    <div class="acc-font-size mt-2">
+                        <span>Letter Spacing:</span>
+                        <button id="letterDecrease">−</button>
+                        <span id="letterSizeLabel">Normal</span>
+                        <button id="letterIncrease">+</button>
+                    </div>
+                </div>
+
+                <div class="acc-section">
+                    <h6>🧠 Cognitive</h6>
+                    <div class="acc-grid">
+                        <button class="acc-btn" data-feature="focusMode">🎯 Focus Mode</button>
+                        <button class="acc-btn" data-feature="readingGuide">📏 Reading Guide</button>
+                        <button class="acc-btn" data-feature="pauseAnimations">⏸️ Pause Animations</button>
+                        <button class="acc-btn" data-feature="muteSounds">🔇 Mute Sounds</button>
+                    </div>
+                </div>
+
+                <div class="acc-section">
+                    <h6>⌨️ Navigation</h6>
+                    <div class="acc-grid">
+                        <button class="acc-btn" data-feature="keyboardNav">⌨️ Keyboard Nav</button>
+                        <button class="acc-btn" data-feature="focusHighlight">🟡 Focus Highlight</button>
+                    </div>
+                </div>
+
+                <div class="acc-reset-all">
+                    <button id="resetAllAccessibility">🔄 Reset All</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- READING GUIDE LINE -->
+    <div id="readingGuideLine"></div>
+
 </body>
 </html>

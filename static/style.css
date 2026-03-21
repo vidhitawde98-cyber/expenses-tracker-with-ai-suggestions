@@ -390,3 +390,278 @@ input[type="date"].form-control {
         max-width: 100% !important;
     }
 }
+
+/* ============================================================
+   ACCESSIBILITY PANEL
+   ============================================================ */
+
+#accessibilityOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 9998;
+}
+
+#accessibilityBox {
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    width: 340px;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    z-index: 9999;
+    font-size: 14px;
+}
+
+#accessibilityHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: #0d6efd;
+    color: #fff;
+    border-radius: 14px 14px 0 0;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+#accessibilityClose {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+#accessibilityContent {
+    padding: 14px;
+}
+
+.acc-section {
+    margin-bottom: 16px;
+}
+
+.acc-section h6 {
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 4px;
+}
+
+.acc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.acc-btn {
+    padding: 8px 6px;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+    background: #f8f9fa;
+    color: #333;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.acc-btn:hover {
+    border-color: #0d6efd;
+    background: #e7f0ff;
+}
+
+.acc-btn.active {
+    background: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+
+.acc-font-size {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.acc-font-size span {
+    font-size: 12px;
+    color: #555;
+    min-width: 90px;
+}
+
+.acc-font-size button {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 2px solid #dee2e6;
+    background: #f8f9fa;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.acc-font-size button:hover {
+    background: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+
+#fontSizeLabel, #lineSizeLabel, #letterSizeLabel {
+    font-size: 12px;
+    min-width: 40px;
+    text-align: center;
+    color: #0d6efd;
+    font-weight: 700;
+}
+
+.acc-reset-all {
+    text-align: center;
+    margin-top: 8px;
+}
+
+.acc-reset-all button {
+    padding: 8px 24px;
+    border-radius: 8px;
+    border: none;
+    background: #dc3545;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.acc-reset-all button:hover {
+    background: #b02a37;
+}
+
+/* Reading Guide Line */
+#readingGuideLine {
+    display: none;
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 200, 0, 0.7);
+    pointer-events: none;
+    z-index: 99999;
+    box-shadow: 0 0 8px 16px rgba(255,200,0,0.08);
+}
+
+/* ===== ACCESSIBILITY FEATURE STYLES ===== */
+
+/* High Contrast */
+body.acc-high-contrast {
+    filter: contrast(200%) !important;
+}
+
+/* Grayscale */
+body.acc-grayscale {
+    filter: grayscale(100%) !important;
+}
+
+/* Dark High Contrast */
+body.acc-dark-contrast {
+    filter: contrast(200%) invert(1) !important;
+}
+
+/* Light Background */
+body.acc-light-bg * {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* Hide Images */
+body.acc-hide-images img {
+    visibility: hidden !important;
+}
+
+/* Big Cursor */
+body.acc-big-cursor,
+body.acc-big-cursor * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M8 2 L8 26 L14 20 L18 30 L22 28 L18 18 L26 18 Z' fill='black' stroke='white' stroke-width='2'/%3E%3C/svg%3E") 0 0, auto !important;
+}
+
+/* Dyslexia Font */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap');
+body.acc-dyslexia-font,
+body.acc-dyslexia-font * {
+    font-family: 'Lexend', sans-serif !important;
+    letter-spacing: 0.05em !important;
+    word-spacing: 0.1em !important;
+}
+
+/* Readable Font */
+body.acc-readable-font,
+body.acc-readable-font * {
+    font-family: 'Arial', sans-serif !important;
+    font-size: 1.05em !important;
+}
+
+/* Highlight Links */
+body.acc-highlight-links a {
+    background: yellow !important;
+    color: #000 !important;
+    text-decoration: underline !important;
+    padding: 1px 3px !important;
+    border-radius: 3px !important;
+}
+
+/* Highlight Headers */
+body.acc-highlight-headers h1,
+body.acc-highlight-headers h2,
+body.acc-highlight-headers h3,
+body.acc-highlight-headers h4,
+body.acc-highlight-headers h5,
+body.acc-highlight-headers h6 {
+    background: #fffde7 !important;
+    color: #000 !important;
+    border-left: 4px solid #f9a825 !important;
+    padding-left: 8px !important;
+}
+
+/* Focus Mode - dim everything except focused element */
+body.acc-focus-mode *:not(:focus):not(:focus-within) {
+    opacity: 0.4 !important;
+    transition: opacity 0.2s !important;
+}
+body.acc-focus-mode *:focus,
+body.acc-focus-mode *:focus-within {
+    opacity: 1 !important;
+}
+
+/* Pause Animations */
+body.acc-pause-animations *,
+body.acc-pause-animations *::before,
+body.acc-pause-animations *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Keyboard Nav / Focus Highlight */
+body.acc-focus-highlight *:focus {
+    outline: 3px solid #ff0 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 5px rgba(255,200,0,0.4) !important;
+}
+
+/* Mobile: full-width panel */
+@media (max-width: 576px) {
+    #accessibilityBox {
+        top: 56px;
+        right: 0;
+        left: 0;
+        width: 100%;
+        border-radius: 0 0 14px 14px;
+        max-height: 80vh;
+    }
+}

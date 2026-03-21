@@ -83,5 +83,144 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+// ===== ACCESSIBILITY PANEL =====
+    const accToggle = document.getElementById('accessibilityToggle');
+    const accPanel = document.getElementById('accessibilityPanel');
+    const accClose = document.getElementById('accessibilityClose');
+    const accOverlay = document.getElementById('accessibilityOverlay');
+
+    if (accToggle && accPanel) {
+
+        // Open / close
+        accToggle.addEventListener('click', function () {
+            accPanel.style.display = accPanel.style.display === 'none' ? 'block' : 'none';
+        });
+        if (accClose) accClose.addEventListener('click', () => accPanel.style.display = 'none');
+        if (accOverlay) accOverlay.addEventListener('click', () => accPanel.style.display = 'none');
+
+        // --- Feature toggle buttons ---
+        const featureMap = {
+            highContrast:      'acc-high-contrast',
+            grayscale:         'acc-grayscale',
+            darkHighContrast:  'acc-dark-contrast',
+            lightBackground:   'acc-light-bg',
+            hideImages:        'acc-hide-images',
+            bigCursor:         'acc-big-cursor',
+            dyslexiaFont:      'acc-dyslexia-font',
+            readableFont:      'acc-readable-font',
+            highlightLinks:    'acc-highlight-links',
+            highlightHeaders:  'acc-highlight-headers',
+            focusMode:         'acc-focus-mode',
+            pauseAnimations:   'acc-pause-animations',
+            keyboardNav:       'acc-keyboard-nav',
+            focusHighlight:    'acc-focus-highlight',
+        };
+
+        // Load saved features
+        Object.entries(featureMap).forEach(([feature, cls]) => {
+            if (localStorage.getItem('acc_' + feature) === 'on') {
+                document.body.classList.add(cls);
+                const btn = document.querySelector('[data-feature="' + feature + '"]');
+                if (btn) btn.classList.add('active');
+            }
+        });
+
+        document.querySelectorAll('.acc-btn[data-feature]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const feature = this.dataset.feature;
+                const cls = featureMap[feature];
+                if (!cls) return;
+                const isOn = document.body.classList.toggle(cls);
+                this.classList.toggle('active', isOn);
+                localStorage.setItem('acc_' + feature, isOn ? 'on' : 'off');
+            });
+        });
+
+        // --- Font size ---
+        let fontSize = parseInt(localStorage.getItem('acc_fontSize') || '100');
+        function applyFontSize() {
+            document.documentElement.style.fontSize = fontSize + '%';
+            document.getElementById('fontSizeLabel').textContent = fontSize + '%';
+            localStorage.setItem('acc_fontSize', fontSize);
+        }
+        applyFontSize();
+        document.getElementById('fontIncrease').addEventListener('click', () => { if (fontSize < 150) { fontSize += 10; applyFontSize(); } });
+        document.getElementById('fontDecrease').addEventListener('click', () => { if (fontSize > 70) { fontSize -= 10; applyFontSize(); } });
+        document.getElementById('fontReset').addEventListener('click', () => { fontSize = 100; applyFontSize(); });
+
+        // --- Line height ---
+        const lineSteps = ['normal', '1.5', '1.8', '2.2', '2.8'];
+        let lineIdx = parseInt(localStorage.getItem('acc_lineIdx') || '0');
+        function applyLineHeight() {
+            document.body.style.lineHeight = lineSteps[lineIdx];
+            document.getElementById('lineSizeLabel').textContent = lineSteps[lineIdx];
+            localStorage.setItem('acc_lineIdx', lineIdx);
+        }
+        applyLineHeight();
+        document.getElementById('lineIncrease').addEventListener('click', () => { if (lineIdx < lineSteps.length - 1) { lineIdx++; applyLineHeight(); } });
+        document.getElementById('lineDecrease').addEventListener('click', () => { if (lineIdx > 0) { lineIdx--; applyLineHeight(); } });
+
+        // --- Letter spacing ---
+        const letterSteps = ['normal', '0.05em', '0.1em', '0.15em', '0.2em'];
+        let letterIdx = parseInt(localStorage.getItem('acc_letterIdx') || '0');
+        function applyLetterSpacing() {
+            document.body.style.letterSpacing = letterSteps[letterIdx];
+            document.getElementById('letterSizeLabel').textContent = letterSteps[letterIdx];
+            localStorage.setItem('acc_letterIdx', letterIdx);
+        }
+        applyLetterSpacing();
+        document.getElementById('letterIncrease').addEventListener('click', () => { if (letterIdx < letterSteps.length - 1) { letterIdx++; applyLetterSpacing(); } });
+        document.getElementById('letterDecrease').addEventListener('click', () => { if (letterIdx > 0) { letterIdx--; applyLetterSpacing(); } });
+
+        // --- Reading Guide ---
+        const guideLine = document.getElementById('readingGuideLine');
+        let readingGuideOn = localStorage.getItem('acc_readingGuide') === 'on';
+        function toggleReadingGuide(on) {
+            readingGuideOn = on;
+            guideLine.style.display = on ? 'block' : 'none';
+            localStorage.setItem('acc_readingGuide', on ? 'on' : 'off');
+            const btn = document.querySelector('[data-feature="readingGuide"]');
+            if (btn) btn.classList.toggle('active', on);
+        }
+        toggleReadingGuide(readingGuideOn);
+        document.addEventListener('mousemove', (e) => {
+            if (readingGuideOn) guideLine.style.top = e.clientY + 'px';
+        });
+        document.querySelector('[data-feature="readingGuide"]').addEventListener('click', function () {
+            toggleReadingGuide(!readingGuideOn);
+        });
+
+        // --- Mute Sounds (stops HTML5 audio/video) ---
+        document.querySelector('[data-feature="muteSounds"]').addEventListener('click', function () {
+            const isActive = this.classList.toggle('active');
+            document.querySelectorAll('audio, video').forEach(el => el.muted = isActive);
+            localStorage.setItem('acc_muteSounds', isActive ? 'on' : 'off');
+        });
+        if (localStorage.getItem('acc_muteSounds') === 'on') {
+            document.querySelectorAll('audio, video').forEach(el => el.muted = true);
+            const btn = document.querySelector('[data-feature="muteSounds"]');
+            if (btn) btn.classList.add('active');
+        }
+
+        // --- Reset All ---
+        document.getElementById('resetAllAccessibility').addEventListener('click', function () {
+            Object.entries(featureMap).forEach(([feature, cls]) => {
+                document.body.classList.remove(cls);
+                localStorage.removeItem('acc_' + feature);
+                const btn = document.querySelector('[data-feature="' + feature + '"]');
+                if (btn) btn.classList.remove('active');
+            });
+            fontSize = 100; applyFontSize();
+            lineIdx = 0; applyLineHeight();
+            letterIdx = 0; applyLetterSpacing();
+            toggleReadingGuide(false);
+            document.documentElement.style.fontSize = '';
+            document.body.style.lineHeight = '';
+            document.body.style.letterSpacing = '';
+            ['acc_fontSize','acc_lineIdx','acc_letterIdx','acc_readingGuide','acc_muteSounds'].forEach(k => localStorage.removeItem(k));
+        });
+
+    }
+
 
 });
