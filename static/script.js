@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
     passwordFields.forEach(function (input) {
         // Create wrapper
         const wrapper = document.createElement('div');
-        wrapper.style.position = 'relative';
+        wrapper.style.cssText = 'position: relative; display: block;';
 
         // Insert wrapper before input
         input.parentNode.insertBefore(wrapper, input);
@@ -51,20 +51,25 @@ document.addEventListener("DOMContentLoaded", function () {
         const eyeBtn = document.createElement('button');
         eyeBtn.type = 'button';
         eyeBtn.innerHTML = '👁️';
+        input.style.paddingRight = '44px';
         eyeBtn.style.cssText = `
             position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
+            right: 10px;
+            top: 0;
+            bottom: 0;
+            height: 100%;
             background: none;
             border: none;
             cursor: pointer;
             font-size: 18px;
-            padding: 0;
+            padding: 0 4px;
             line-height: 1;
             z-index: 10;
-        `;
-
+            display: flex;
+            align-items: center;
+            justify-content: center;
+         `;
+        
         wrapper.appendChild(eyeBtn);
 
         // Toggle on click

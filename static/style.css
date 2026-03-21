@@ -337,3 +337,58 @@ footer {
 .dark-mode table thead th {
     color: #ffffff !important;
 }
+
+/* FIX: Date inputs invisible on real Android devices */
+input[type="date"].form-control {
+    min-height: 44px;
+    width: 100%;
+    display: block;
+    -webkit-appearance: none;
+    appearance: none;
+    color: inherit;
+}
+
+@media (max-width: 576px) {
+    input[type="date"].form-control {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+}
+
+.dark-mode input[type="date"].form-control {
+    color: #ffffff !important;
+    background-color: #2a2a2a !important;
+    border-color: #444 !important;
+}
+
+.dark-mode input[type="date"]::-webkit-datetime-edit {
+    color: #ffffff;
+}
+
+.dark-mode input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+/* FIX: Pie chart too large on mobile */
+.card-body img[alt="Category Pie Chart"] {
+    max-width: 480px;
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+    height: auto;
+}
+
+.card-body img[alt="Monthly Line Chart"] {
+    max-width: 700px;
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+    height: auto;
+}
+
+@media (max-width: 576px) {
+    .card-body img[alt="Category Pie Chart"],
+    .card-body img[alt="Monthly Line Chart"] {
+        max-width: 100% !important;
+    }
+}
