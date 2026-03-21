@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
 </head>
 <body class="light-mode">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('home') if current_user.is_authenticated else url_for('login') }}">💰 Expense Tracker</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -33,10 +33,10 @@
 </ul>
                     </li>
                     <li class="nav-item">
-                        <button class="btn btn-light ms-2" id="darkModeToggle">🌙 Dark Mode</button>
+                        <button class="btn btn-light ms-2" id="darkModeToggle" aria-label="Toggle dark mode">🌙 Dark Mode</button>
                     </li>
                     <li class="nav-item">
-                        <button class="btn btn-outline-light ms-2" id="accessibilityToggle">♿ Accessibility</button>
+                        <button class="btn btn-outline-light ms-2" id="accessibilityToggle" aria-label="Open accessibility options" aria-haspopup="dialog">♿ Accessibility</button>
                     </li>
                     {% endif %}
                 </ul>
@@ -59,11 +59,11 @@
     </div>
     {% endif %}
 
-    <div class="container mt-4">
+    <main class="container mt-4" id="mainContent" role="main" aria-label="Main content">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
-    <footer class="text-center py-3 mt-5 bg-dark text-light">
+    <footer class="text-center py-3 mt-5 bg-dark text-light" role="contentinfo" aria-label="Site footer">
         <p>© Expense Tracker | Built with Flask & MongoDB</p>
     </footer>
 
@@ -73,7 +73,7 @@
     <!-- ACCESSIBILITY PANEL -->
     <div id="accessibilityPanel" style="display:none;">
         <div id="accessibilityOverlay"></div>
-        <div id="accessibilityBox">
+        <div id="accessibilityBox" role="dialog" aria-modal="true" aria-label="Accessibility options">
             <div id="accessibilityHeader">
                 <span>♿ Accessibility</span>
                 <button id="accessibilityClose">✕</button>
@@ -137,6 +137,25 @@
                         <button class="acc-btn" data-feature="keyboardNav">⌨️ Keyboard Nav</button>
                         <button class="acc-btn" data-feature="focusHighlight">🟡 Focus Highlight</button>
                     </div>
+                </div>
+
+                <div class="acc-section">
+                    <h6>🔊 Screen Reader</h6>
+                    <div class="acc-grid">
+                        <button id="ttsReadPage" class="acc-btn">🔊 Read Page</button>
+                        <button id="ttsStop" class="acc-btn">⏹️ Stop Reading</button>
+                    </div>
+                    <div class="acc-font-size mt-2">
+                        <span>Speed:</span>
+                        <button id="ttsSlower">−</button>
+                        <span id="ttsSpeedLabel">1x</span>
+                        <button id="ttsFaster">+</button>
+                    </div>
+                    <div class="acc-font-size mt-2">
+                        <span>Voice:</span>
+                        <select id="ttsVoiceSelect" style="flex:1; padding:4px 8px; border-radius:6px; border:2px solid #dee2e6; font-size:12px;"></select>
+                    </div>
+                    <div class="acc-tts-status" id="ttsStatus"></div>
                 </div>
 
                 <div class="acc-reset-all">

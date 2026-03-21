@@ -680,3 +680,12 @@ body.acc-focus-highlight *:focus {
         max-height: 80vh;
     }
 }
+
+/* TTS Status */
+.acc-tts-status {
+    font-size: 11px;
+    color: #0d6efd;
+    margin-top: 6px;
+    min-height: 16px;
+    font-weight: 600;
+}

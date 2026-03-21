@@ -202,6 +202,118 @@ document.addEventListener("DOMContentLoaded", function () {
             if (btn) btn.classList.add('active');
         }
 
+        // --- Text to Speech ---
+        const synth = window.speechSynthesis;
+        let ttsRate = 1;
+        let ttsVoice = null;
+        const ttsStatus = document.getElementById('ttsStatus');
+        const ttsSpeedLabel = document.getElementById('ttsSpeedLabel');
+        const ttsVoiceSelect = document.getElementById('ttsVoiceSelect');
+
+        // Load available voices into dropdown
+        function loadVoices() {
+            const voices = synth.getVoices();
+            if (!ttsVoiceSelect) return;
+            ttsVoiceSelect.innerHTML = '';
+            voices.forEach(function(voice, i) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = voice.name + ' (' + voice.lang + ')';
+                ttsVoiceSelect.appendChild(opt);
+            });
+            // Default to first English voice
+            const engIdx = voices.findIndex(v => v.lang.startsWith('en'));
+            if (engIdx >= 0) ttsVoiceSelect.value = engIdx;
+        }
+
+        if (synth) {
+            loadVoices();
+            if (synth.onvoiceschanged !== undefined) {
+                synth.onvoiceschanged = loadVoices;
+            }
+        }
+
+        // Read full page
+        document.getElementById('ttsReadPage').addEventListener('click', function () {
+            if (!synth) { alert('Sorry, your browser does not support text-to-speech.'); return; }
+            synth.cancel();
+
+            // Get all visible text from main content
+            const mainContent = document.querySelector('main#mainContent') || document.querySelector('.container.mt-4') || document.body;
+            const text = mainContent.innerText || mainContent.textContent;
+            if (!text.trim()) return;
+
+            // Split into chunks (browsers have a limit per utterance)
+            const chunkSize = 200;
+            const words = text.split(' ');
+            const chunks = [];
+            let current = '';
+            words.forEach(word => {
+                if ((current + ' ' + word).length > chunkSize) {
+                    chunks.push(current.trim());
+                    current = word;
+                } else {
+                    current += ' ' + word;
+                }
+            });
+            if (current.trim()) chunks.push(current.trim());
+
+            let chunkIndex = 0;
+            if (ttsStatus) ttsStatus.textContent = '🔊 Reading...';
+
+            function speakNext() {
+                if (chunkIndex >= chunks.length) {
+                    if (ttsStatus) ttsStatus.textContent = '✅ Done reading';
+                    return;
+                }
+                const utter = new SpeechSynthesisUtterance(chunks[chunkIndex]);
+                utter.rate = ttsRate;
+                const voices = synth.getVoices();
+                if (ttsVoiceSelect && voices[ttsVoiceSelect.value]) {
+                    utter.voice = voices[ttsVoiceSelect.value];
+                }
+                utter.onend = function() {
+                    chunkIndex++;
+                    speakNext();
+                };
+                utter.onerror = function() {
+                    chunkIndex++;
+                    speakNext();
+                };
+                synth.speak(utter);
+            }
+            speakNext();
+        });
+
+        // Stop reading
+        document.getElementById('ttsStop').addEventListener('click', function () {
+            if (synth) {
+                synth.cancel();
+                if (ttsStatus) ttsStatus.textContent = '⏹️ Stopped';
+            }
+        });
+
+        // Speed controls
+        const ttsRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+        let ttsRateIdx = 2;
+        document.getElementById('ttsFaster').addEventListener('click', function () {
+            if (ttsRateIdx < ttsRates.length - 1) {
+                ttsRateIdx++;
+                ttsRate = ttsRates[ttsRateIdx];
+                if (ttsSpeedLabel) ttsSpeedLabel.textContent = ttsRate + 'x';
+            }
+        });
+        document.getElementById('ttsSlower').addEventListener('click', function () {
+            if (ttsRateIdx > 0) {
+                ttsRateIdx--;
+                ttsRate = ttsRates[ttsRateIdx];
+                if (ttsSpeedLabel) ttsSpeedLabel.textContent = ttsRate + 'x';
+            }
+        });
+
+
+
+
         // --- Reset All ---
         document.getElementById('resetAllAccessibility').addEventListener('click', function () {
             Object.entries(featureMap).forEach(([feature, cls]) => {
