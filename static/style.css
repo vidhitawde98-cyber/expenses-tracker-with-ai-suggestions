@@ -343,8 +343,6 @@ input[type="date"].form-control {
     min-height: 44px;
     width: 100%;
     display: block;
-    -webkit-appearance: none;
-    appearance: none;
     color: inherit;
 }
 
