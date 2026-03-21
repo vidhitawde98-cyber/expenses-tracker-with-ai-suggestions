@@ -15,12 +15,18 @@
             <label class="form-label small fw-bold mb-1">📅 From Date</label>
             <input type="date" name="start_date" class="form-control"
                    value="{{ request.args.get('start_date', '') }}"
+                   placeholder="YYYY-MM-DD"
+                   onfocus="(this.type='date')"
+                   onblur="if(!this.value)this.type='text'"
                    style="min-height:44px; width:100%; display:block;">
         </div>
         <div class="col-6">
             <label class="form-label small fw-bold mb-1">📅 To Date</label>
             <input type="date" name="end_date" class="form-control"
                    value="{{ request.args.get('end_date', '') }}"
+                   placeholder="YYYY-MM-DD"
+                   onfocus="(this.type='date')"
+                   onblur="if(!this.value)this.type='text'"
                    style="min-height:44px; width:100%; display:block;">
         </div>
     </div>
