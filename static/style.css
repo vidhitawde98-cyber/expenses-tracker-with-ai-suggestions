@@ -575,7 +575,22 @@ body.acc-dark-contrast {
 }
 
 /* Light Background */
-body.acc-light-bg * {
+body.acc-light-bg {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    filter: none !important;
+}
+body.acc-light-bg .card,
+body.acc-light-bg .card-body,
+body.acc-light-bg .card-header,
+body.acc-light-bg .navbar,
+body.acc-light-bg .container,
+body.acc-light-bg p,
+body.acc-light-bg h1, body.acc-light-bg h2,
+body.acc-light-bg h3, body.acc-light-bg h4,
+body.acc-light-bg h5, body.acc-light-bg h6,
+body.acc-light-bg td, body.acc-light-bg th,
+body.acc-light-bg .list-group-item {
     background-color: #ffffff !important;
     color: #000000 !important;
 }
