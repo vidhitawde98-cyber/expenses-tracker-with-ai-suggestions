@@ -3,7 +3,7 @@
 {% block title %}Insights{% endblock %}
 
 {% block content %}
-<h2 class="text-center">📊 Spending Insights</h2>
+<h2 class="text-center" role="heading" aria-level="1">📊 Spending Insights</h2>
 
 {% if total_expenses == 0 %}
 <p class="text-center">No expenses recorded yet.</p>
@@ -83,7 +83,7 @@
 <h3 class="mt-5">📈 Category-Wise Spending Distribution</h3>
 <div class="card shadow">
     <div class="card-body text-center">
-        <img src="{{ category_chart }}" class="img-fluid" alt="Category Pie Chart">
+        <img src="{{ category_chart }}" class="img-fluid" alt="Pie Chart showing category-wise spending distribution" role="img">
     </div>
 </div>
 {% endif %}
@@ -92,7 +92,7 @@
 <h3 class="mt-5">📉 Monthly Spending Trends</h3>
 <div class="card shadow">
     <div class="card-body text-center">
-        <img src="{{ trend_chart }}" class="img-fluid" alt="Monthly Line Chart">
+        <img src="{{ trend_chart }}" class="img-fluid" alt="Line chart showing monthly spending trends over time" role="img">
     </div>
 </div>
 {% endif %}

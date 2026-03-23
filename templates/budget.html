@@ -11,10 +11,10 @@
                 <h5 class="mb-0">➕ Set / Update Budget</h5>
             </div>
             <div class="card-body">
-                <form method="POST">
+                <form method="POST" aria-label="Set or update budget form">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Category:</label>
-                        <select name="category" class="form-select" required>
+                        <select name="category" class="form-select" required aria-label="Select category for budget" aria-required="true">
                             {% for cat in categories %}
                             <option value="{{ cat.name }}">{{ cat.icon }} {{ cat.name }}</option>
                             {% endfor %}
@@ -23,7 +23,8 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Monthly Budget (₹):</label>
                         <input type="number" name="budget_amount" class="form-control"
-                               placeholder="e.g., 5000" required min="1" step="0.01">
+                               placeholder="e.g., 5000" required min="1" step="0.01"
+                               aria-label="Monthly budget amount in rupees" aria-required="true">
                     </div>
                     <button type="submit" class="btn btn-primary w-100">💾 Save Budget</button>
                 </form>

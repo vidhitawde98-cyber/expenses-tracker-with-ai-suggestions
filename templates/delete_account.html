@@ -22,17 +22,19 @@
                     <p class="mt-2 mb-0"><strong>This action CANNOT be undone!</strong></p>
                 </div>
 
-                <form method="POST">
+                <form method="POST" aria-label="Delete account confirmation form">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Confirm Your Password:</label>
                         <input type="password" name="password" class="form-control" 
-                               placeholder="Enter your password to confirm" required autofocus>
+                               placeholder="Enter your password to confirm" required autofocus
+                               aria-label="Password confirmation" aria-required="true">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Type "DELETE" to confirm:</label>
                         <input type="text" name="confirm_text" class="form-control" 
-                               placeholder="Type DELETE in capital letters" required>
+                               placeholder="Type DELETE in capital letters" required
+                                aria-label="Type DELETE to confirm account deletion" aria-required="true">
                         <small class="text-muted">You must type exactly: DELETE</small>
                     </div>
 

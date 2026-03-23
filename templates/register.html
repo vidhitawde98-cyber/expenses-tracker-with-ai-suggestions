@@ -66,20 +66,22 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+        <form method="POST" action="{{ url_for('register') }}" id="registerForm" aria-label="Registration form">
             <div class="mb-3">
                 <label class="form-label fw-bold">👤 Username</label>
                 <input type="text" class="form-control" name="username"
-                       placeholder="Choose a username (min 3 chars)" required minlength="3">
+                       placeholder="Choose a username (min 3 chars)" required minlength="3"
+                       aria-label="Username" aria-required="true">
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">📧 Email Address</label>
-                <input type="email" class="form-control" name="email" placeholder="Enter your email" required>
+                <input type="email" class="form-control" name="email" placeholder="Enter your email" required aria-label="Email address" aria-required="true">
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">🔒 Password</label>
                 <input type="password" class="form-control" name="password"
-                       id="password" placeholder="Min 6 characters" required minlength="6">
+                       id="password" placeholder="Min 6 characters" required minlength="6"
+                       aria-label="Password" aria-required="true" aria-describedby="strengthText">
                 <div class="strength-bar-container">
                     <div class="strength-bar" id="strengthBar"></div>
                 </div>
@@ -88,7 +90,8 @@
             <div class="mb-3">
                 <label class="form-label fw-bold">🔒 Confirm Password</label>
                 <input type="password" class="form-control" name="confirm_password"
-                       id="confirm_password" placeholder="Re-enter password" required>
+                       id="confirm_password" placeholder="Re-enter password" required
+                       aria-label="Confirm password" aria-required="true" aria-describedby="matchText">
                 <small id="matchText" class="fw-bold mt-1 d-block"></small>
             </div>
             <button type="submit" class="btn btn-register">🚀 Create Account</button>

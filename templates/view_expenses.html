@@ -4,11 +4,12 @@
 
 <h2 class="text-center mb-4">📜 My Expenses</h2>
 
-<form action="{{ url_for('view_expenses') }}" method="GET" class="card p-3 shadow-sm mb-4">
+<form action="{{ url_for('view_expenses') }}" method="GET" class="card p-3 shadow-sm mb-4" aria-label="Search and filter expenses">
     <div class="mb-2">
         <input type="text" name="category" class="form-control"
                placeholder="🔍 Search by Category"
-               value="{{ request.args.get('category', '') }}">
+               value="{{ request.args.get('category', '') }}"
+               aria-label="Search expenses by category">
     </div>
     <div class="row g-2 mb-2">
         <div class="col-6">
@@ -39,7 +40,7 @@
 <div class="d-none d-md-block card shadow mb-4">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0" role="table" aria-label="Expenses list">
                 <thead class="table-dark">
                     <tr>
                         <th>Category</th>
