@@ -689,3 +689,65 @@ body.acc-focus-highlight *:focus {
     min-height: 16px;
     font-weight: 600;
 }
+
+/* ===== ACCESSIBILITY BUTTON TOOLTIPS ===== */
+.acc-btn {
+    position: relative;
+}
+
+.acc-btn::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    width: 200px;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.4;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 99999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.acc-btn:hover::after,
+.acc-btn:focus::after {
+    opacity: 1;
+}
+
+/* Prevent tooltip going off left edge */
+.acc-grid .acc-btn:nth-child(odd)::after {
+    left: 0;
+    transform: translateX(0);
+}
+
+/* Prevent tooltip going off right edge */
+.acc-grid .acc-btn:nth-child(even)::after {
+    left: auto;
+    right: 0;
+    transform: translateX(0);
+}
+/* Mobile: show description below active button instead of tooltip */
+@media (max-width: 768px) {
+    .acc-btn::after {
+        display: none;
+    }
+    .acc-btn.active::before {
+        content: attr(title);
+        display: block;
+        font-size: 10px;
+        color: #ffffff;
+        margin-top: 4px;
+        font-weight: 400;
+        white-space: normal;
+        line-height: 1.3;
+        opacity: 0.9;
+    }
+}
