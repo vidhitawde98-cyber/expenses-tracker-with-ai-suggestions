@@ -21,7 +21,7 @@ app = Flask(__name__, template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'vidhi-expense-tracker-secret-2024')
 
 # ── MongoDB Configuration ─────────────────────────────────────────────────────
-MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://expense_user:V3YAsekV8Bd5euMo@expense-tracker.zhkwjlw.mongodb.net/expense_tracker?retryWrites=true&w=majority&appName=expense-tracker')
+MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://vidhitawde98_db_user:rK7BFXKRQRerrP9v@expense-cluster.9zfbopr.mongodb.net/?appName=expense-cluster')
 
 client = MongoClient(MONGO_URI)
 db = client['expense_tracker']
